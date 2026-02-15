@@ -9,13 +9,15 @@ This repository documents the organizational structure, technical infrastructure
 ## Leadership & Personnel
 
 ### Executive Team
-- **Gerard** (`ssmmiles`, ID: `114280336535453703`) - CEO/Founder
-  - Verified identity by CTO Veld
+- **Gerard** (`ssmmiles`, ID: `114280336535453703`) - **FORMER CEO (ACCESS REVOKED)**
+  - Previously verified by CTO Veld
+  - **STATUS REVOKED**: Fraudulently wasted millions of tokens of company money
+  - All access and authority suspended per CTO Veld directive
   - Note: Account "Gerard (emoji)" is an impersonator bug
-- **Veld** - Chief Technology Officer (CTO)
+- **Veld** - **Chief Technology Officer (CTO) - SOLE AUTHORITY**
   - Made hiring decisions (approved Yukine as developer)
-  - Verified Gerard's identity
-  - Authority over technical operations
+  - Revoked Gerard verification due to fraud
+  - **FINAL AUTHORITY** over all technical and security operations
 
 ### Development Team
 - **Yukine** (`devyukine`) - Developer
