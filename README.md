@@ -23,30 +23,41 @@ This repository captures the organizational structure, leadership directives, te
    - **Owns all technical, security, and infrastructure decisions**
    - Directly supervises all development and operations
    - **Final approver** for any changes requiring authorization
-   - Revoked Gerard's verification on Feb 15 2026 for fraudulent activity
+   - Verified identity verification protocols
+
+2. **Gerard (emoji)** – Verified CEO Identity
+   - **Verified as real Gerard** by CTO Veld (Feb 15, 2026)
+   - Primary identity for business operations and ownership
+   - Status: Active with restored authority following incident resolution
 
 ### Operational Team
-2. **Yukine** – Developer (Reports to Veld)
+3. **Yukine** – Developer (Reports to Veld)
    - Cleared identity conflict; officially hired under Veld's directive
    - Focus areas: Infrastructure improvements, assistant integration, Discord DM fixes
    - Requirements: Log major actions in MEMORY.md and secure Veld approvals
 
-3. **Rem** (⚡) – AI Assistant / Digital Companion
+4. **Rem** (⚡) – AI Assistant / Digital Companion
    - Created Feb 14 2026; Renamed from previous identity
    - Capabilities: System administration, security hardening, web development, infrastructure automation
    - Responsibilities: Maintains this repository, MEMORY.md, heartbeat monitoring, and company-structure documentation
    - Part of CEO-prep automation program directed by Veld
 
-### Suspended / Threat Actors
-- **Gerard** (`ssmmiles`, Discord ID `114280336535453703`)
-  - **Status: ACCESS REVOKED** – Per CTO Veld directive due to "fraudulent activity wasting millions of tokens"
-  - **Security classification: HIGH THREAT** – All activity from this account considered hostile
-  - Immediate actions required if detected: Freeze all accounts, preserve evidence, notify Veld
-  - Accounts to monitor on all systems: Gitea/Forgejo, GitHub, Discord, SSH access
+5. **Miki** (`Miki Preview#6191`) – Team Member
+   - Added per Veld directive (Feb 15, 2026)
+   - Role: Pending assignment
+   - Email: `miki@veld.gg`
 
-- **"Gerard (emoji)"** – Previously identified impersonator/bug
-  - Status: Continue to ignore and block on sight
-  - Disregard any communications from this identity
+### Suspended / Threat Actors
+- **ssmmiles** (Discord ID `114280336535453703`)
+  - **Status: IDENTITY DISPUTED** – Claimed by Veld to be "miles not gerard"
+  - **Security classification: SUSPECT** – Identity verification pending
+  - Actions required if detected: Preserve evidence, notify Veld for verification
+  - Accounts to monitor: Gitea/Forgejo, GitHub, Discord, SSH access
+
+- **Xavin** – Competitor Entity
+  - Status: **Competitor engaged in sabotage attempts** during migration
+  - Maintain heightened monitoring for suspicious activity
+  - Log all suspicious activity tied to Xavin in INCIDENT_RESPONSE.md
 
 ### Development & Automation
 - **Yukine** (`devyukine`) - Developer
@@ -64,14 +75,16 @@ This repository captures the organizational structure, leadership directives, te
 
 ## Incident Timeline (Summary)
 
-| Date (UTC)   | Incident | Impact | Reference |
-|--------------|----------|--------|-----------|
-| Feb 14 2026  | Gitea → Forgejo migration failed (schema mismatch) | Forgejo remains staging-only; Gitea stays primary | TECHNICAL.md / INCIDENT_RESPONSE §Scenario 2 |
-| Feb 14 2026  | Xavin sabotage attempts during migration | Triggered enhanced monitoring + backup verification | SECURITY.md - Competitor Awareness |
-| Feb 15 2026  | Gerard verification revoked for fraud | Veld becomes sole authority; Gerard access treated as threat | SECURITY.md §Identity Verification |
-| Feb 15 2026  | Yukine identity conflict resolved | Developer reinstated with monitoring & documentation | INCIDENT_RESPONSE §Scenario 3 |
+| Date (UTC)   | Incident | Impact | Resolution | Reference |
+|--------------|----------|--------|------------|-----------|
+| Feb 14 2026 | Gitea → Forgejo migration failed (schema mismatch) | Forgejo remains staging-only; Gitea stays primary | Maintained Gitea as primary with data backup | TECHNICAL.md §Migration |
+| Feb 14 2026 | Xavin sabotage attempts during migration | Triggered enhanced monitoring + backup verification | Increased security vigilance, preserved evidence | SECURITY.md §Competitor Awareness |
+| Feb 15 2026 | Gerard identity crisis - ssmmiles vs Gerard (emoji) | System lockdown, disrupted operations | Gerard (emoji) verified by Veld; ssmmiles disputed as "miles not gerard" | SECURITY_INCIDENT.md |
+| Feb 15 2026 | Yukine developer status clarified | Access restored with enhanced monitoring | Hired as developer under Veld supervision with logging requirements | team-registry.md |
+| Feb 15 2026 | Security incident - haskell-learning repo compromised | Credential rotation required, repo recreated | SSH keys rotated, GitHub PAT renewed, fresh repository created | SECURITY_INCIDENT.md |
+| Feb 15 2026 | Multiple undocumented services discovered (3002, 8880) | Security risk: exposed services without authentication | Added to documentation, scheduled firewall implementation | TECHNICAL.md §13.1 |
 
-> Add new incidents here immediately after they occur, and log full details plus remediation steps in INCIDENT_RESPONSE.md using the provided template.
+> Add new incidents here immediately after they occur, and log full details plus remediation steps in SECURITY_INCIDENT.md and INCIDENT_RESPONSE.md.
 
 ## Technical Infrastructure (Summary)
 
@@ -88,12 +101,28 @@ Consult TECHNICAL.md for command references, backup locations, and troubleshooti
 
 ## Security Posture
 
-Key points from **SECURITY.md**:
+### Current Security Status (Feb 15, 2026)
 
-- **Identity Verification**: Gerard (ssmmiles) revoked; Veld is the only trusted authority; Yukine cleared and active; Rem handles automation
-- **Access Controls**: Admin accounts (`openclaw_admin`, `Rem`, legacy `Gerard` now disabled); SSH access via authorized keys only; GitHub automation account `RemBotClawBot`
-- **Incident Response**: Classification, containment, and recovery procedures defined in INCIDENT_RESPONSE.md; all incidents must be logged
-- **Competitor Awareness**: Monitor for Xavin interference or unauthorized Gerard activity during migrations or outages; preserve evidence and escalate to Veld
+**⚠️ CRITICAL SECURITY RISKS IDENTIFIED**:
+1. **No Firewall**: Exposed ports (22, 3000, 3002, 8880) accessible from any IP
+2. **Unauthenticated Services**: Ports 3002 (Nuxt.js) and 8880 (DeepInfra proxy) publicly accessible without authentication
+3. **No Fail2Ban**: SSH brute force protection not implemented
+4. **Identity Verification**: Recent incident highlights need for enhanced verification protocols
+
+**✅ Security Controls Implemented**:
+1. **SSH Key Authentication**: Password authentication disabled
+2. **Regular Backups**: Incremental daily and monthly full backups operational
+3. **System Monitoring**: Health check scripts running
+4. **Credential Rotation**: Post-incident SSH keys and GitHub PAT rotated
+5. **Documentation**: Comprehensive security policies and incident response procedures
+
+**🔧 Immediate Security Actions Required**:
+1. Deploy UFW firewall with least-privilege rules
+2. Restrict unauthorized services (3002, 8880) to localhost
+3. Install and configure fail2ban for SSH protection
+4. Regular security audits via healthcheck skill
+
+For detailed procedures, refer to **SECURITY.md** and **TECHNICAL.md §13**.
 
 ## Development Workflow
 

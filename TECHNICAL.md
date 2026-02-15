@@ -27,11 +27,47 @@
 | 22   | TCP      | SSH (sshd PID 1215) | Key-based root access only |
 | 3000 | TCP      | Gitea 1.23.3 (`/usr/local/bin/gitea web`) | Primary git frontend |
 | 3001 | TCP      | Forgejo (inactive) | Reserved for future migration |
+| 3002 | TCP      | Nuxt.js experience-portal (`node .output/server/index.mjs`) | Development web interface |
+| 8880 | TCP      | DeepInfra Proxy (`python3 /root/deepinfra/proxy.py`) | AI model proxy service |
+| 18789 | TCP      | OpenClaw Gateway (`openclaw-gateway`) | Local management API |
+| 18792 | TCP      | OpenClaw Gateway (`openclaw-gateway`) | Additional API endpoint |
+| 53   | TCP/UDP  | systemd-resolve | Systemd DNS resolver |
 
-> Use `ss -tlnp | grep -E "(22|3000|3001)"` to verify port bindings after changes.
+> Use `ss -tlnp` to verify port bindings after changes. Note that ports 3002 and 8880 are undocumented services needing firewall rules.
 
-### 2.2 Firewall Configuration (Recommended)
-Current status: **Not configured** - UFW (Uncomplicated Firewall) recommended for simplicity.
+### 2.2 Firewall Configuration (Current Status)
+Current status: **Not configured** - UFW detected but not running, iptables not available
+
+**Security Risk**: All exposed ports (22, 3000, 3002, 8880) are publicly accessible without firewall protection.
+
+**Immediate Action Required**:
+```bash
+# Check current firewall status
+apt install iptables -y                    # Install iptables if missing
+apt install ufw -y                         # Reinstall UFW if broken
+
+# Check current iptables rules (empty table indicates no protection)
+iptables -L -n -v
+
+# Recommended temporary measure if firewall can't be installed now:
+# Set up fail2ban for brute force protection
+apt install fail2ban -y
+cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+# Configure fail2ban for SSH
+cat >> /etc/fail2ban/jail.local << EOF
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+EOF
+
+systemctl enable fail2ban
+systemctl start fail2ban
+```
 
 #### Recommended UFW Ruleset:
 ```bash
@@ -136,6 +172,28 @@ Workspace: /root/.openclaw/workspace
 Skills: /usr/lib/node_modules/openclaw/skills/
 Memory: MEMORY.md + memory/YYYY-MM-DD.md + HEARTBEAT.md
 Model Alias: deepinfra/deepseek-ai/DeepSeek-V3.2
+Gateway Ports: 18789, 18792 (local management API)
+```
+
+### 3.4 Nuxt.js experience-portal (Development Web Interface)
+```
+Location: /tmp/nuxt-live/
+Port: 3002
+Purpose: Development web interface for experience-portal
+Status: Currently running, accessible on all interfaces (0.0.0.0)
+Security Risk: No authentication, publicly accessible
+Command: PORT=3002 HOST=0.0.0.0 node .output/server/index.mjs
+```
+
+### 3.5 DeepInfra Proxy Service
+```
+Location: /root/deepinfra/proxy.py
+Port: 8880
+Purpose: AI model proxy for deepinfra models
+Status: Running with Werkzeug/3.0.1
+Security Risk: No authentication, publicly accessible
+Command: /usr/bin/python3 /root/deepinfra/proxy.py
+Action: Restrict to localhost only or implement authentication
 ```
 
 ## 4. CI/CD Pipeline Status
@@ -262,17 +320,107 @@ ssh -T git@github.com  # via RemBotClawBot key
 | Symptom | Diagnostic Commands | Likely Cause | Resolution |
 |---------|---------------------|--------------|------------|
 | Port 3000 unreachable | `ss -tlnp | grep 3000`, `systemctl status gitea`, `curl http://localhost:3000/` | Service down / firewall issue | Restart service, verify firewall, check logs |
+| Port 3002 unreachable | `ss -tlnp | grep 3002`, `ps aux | grep node.*3002`, `cd /tmp/nuxt-live && node .output/server/index.mjs &` | Nuxt app not running | Restart from /tmp/nuxt-live/ directory |
+| Port 8880 unreachable | `ss -tlnp | grep 8880`, `ps aux | grep python.*8880` | DeepInfra proxy down | Check `/root/deepinfra/proxy.py` and restart |
+| Gateway API unreachable | `ss -tlnp | grep 18789`, `systemctl status openclaw-gateway` | OpenClaw gateway down | Restart gateway service |
 | Actions stuck "Waiting" | `journalctl -u gitea | grep runner`, API checks | Runner missing / misconfigured | Install runner, configure token, restart |
 | Unauthorized access alerts | `tail /var/log/auth.log`, `last`, `who` | Brute force attempt | Block IP, enable fail2ban, rotate keys |
 | Disk pressure | `df -h /`, `du -sh /opt/gitea/data` | Large repo data / logs | Prune repos/logs, expand disk, tighten backups |
-| High memory usage | `free -h`, `ps aux --sort=-%mem | head` | runaway process | Restart offending service, investigate leak |
+| High memory usage | `free -h`, `ps aux --sort=-%mem \| head` | runaway process | Restart offending service, investigate leak |
+| SSL/TLS connection errors | `openssl s_client -connect localhost:3000 -tls1_2` | Certificate issues | Check cert validity, renew if expired |
 
-## 13. Next Technical Actions
-1. Configure firewall (ufw/iptables) with least-privilege rules
-2. Install and configure Forgejo runner or external CI alternative
-3. Automate backups via scripts in OPERATIONS.md
-4. Add swapfile (e.g., 2 GiB) for stability
-5. Implement monitoring/alerting stack (e.g., Netdata, Prometheus, or lightweight scripts)
+### 12.1 Service Monitoring Commands
+```bash
+# Check all running services
+ss -tlnp  # List all listening ports
+ps aux | grep -E "(gitea|node.*3002|python.*8880|openclaw)"  # Key processes
+systemctl list-units --type=service --state=running  # System services
+
+# Health checks
+curl -fs http://localhost:3000/healthz || echo "Gitea HTTP check failed"
+curl -fs http://localhost:3002/ || echo "Nuxt app health check failed"
+curl -fs http://localhost:8880/ || echo "DeepInfra proxy check failed"
+
+# Log monitoring
+journalctl -u gitea -n 20 --no-pager
+journalctl -u openclaw -n 20 --no-pager
+tail -50 /var/log/syslog
+tail -50 /var/log/auth.log  # SSH authentication logs
+```
+
+## 13. Documented Security Risks & Remediation
+
+### 13.1 Exposed Services Without Authentication
+**Risk**: Ports 3002 (Nuxt.js) and 8880 (DeepInfra proxy) are publicly accessible without authentication.
+
+**Remediation**:
+1. **Immediate**: Restrict to localhost only
+   ```bash
+   # For Nuxt.js (port 3002)
+   # Change from HOST=0.0.0.0 to HOST=127.0.0.1 in startup command
+   
+   # For DeepInfra proxy (port 8880)  
+   # Update proxy.py to bind to 127.0.0.1 instead of 0.0.0.0
+   ```
+
+2. **Short-term**: Implement basic authentication
+   ```python
+   # Add HTTP Basic Auth to proxy.py
+   from werkzeug.middleware.http_proxy import ProxyMiddleware
+   from werkzeug.security import generate_password_hash, check_password_hash
+   ```
+
+3. **Long-term**: Deploy reverse proxy (Nginx/Apache) with TLS and proper authentication
+
+### 13.2 Missing Firewall Configuration
+**Risk**: No active firewall rules; all ports accessible from any IP.
+
+**Remediation**:
+```bash
+# Install and configure UFW
+apt update && apt install ufw -y
+ufw --force enable
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp comment 'SSH'
+ufw allow 3000/tcp comment 'Gitea'
+# Optional: Restrict to specific IP ranges if possible
+# ufw allow from 192.168.1.0/24 to any port 22
+ufw status verbose
+```
+
+### 13.3 SSH Hardening Needed
+**Risk**: SSH key-based only but no fail2ban protection.
+
+**Remediation**:
+```bash
+# Install fail2ban
+apt install fail2ban -y
+cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+# Configure SSH protection
+cat >> /etc/fail2ban/jail.local << EOF
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+EOF
+
+systemctl enable fail2ban
+systemctl start fail2ban
+```
+
+## 14. Next Technical Actions
+1. **CRITICAL**: Configure firewall (ufw/iptables) with least-privilege rules
+2. **CRITICAL**: Restrict unauthorized services (3002, 8880) to localhost or implement authentication
+3. **HIGH**: Install and configure fail2ban for SSH protection
+4. **MEDIUM**: Install and configure Forgejo runner or external CI alternative
+5. **MEDIUM**: Automate backups via scripts in OPERATIONS.md
+6. **MEDIUM**: Add swapfile (e.g., 2 GiB) for stability
+7. **LOW**: Implement monitoring/alerting stack (Netdata, Prometheus, or lightweight scripts)
 
 ---
 
