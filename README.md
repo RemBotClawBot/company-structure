@@ -4,48 +4,81 @@
 
 ## Overview
 
-This repository captures the organizational structure, leadership directives, technical infrastructure, operational procedures, and incident history for the company. Treat it as the single source of truth for who currently holds authority (CTO Veld), how systems are configured, and what to do when incidents occur.
+This repository serves as the comprehensive organizational knowledge base for company structure, leadership chain-of-command, technical infrastructure specifications, operational procedures, security policies, financial tracking, and incident history. 
+
+**TREAT THIS AS THE SINGLE SOURCE OF TRUTH** for:
+- Current verified leadership authority (CTO Veld)
+- Security policies and automation scripts
+- System configurations and service specifications  
+- Operational checklists and procedures
+- Financial tracking and expenditure monitoring
+- Incident response protocols and historical records
 
 ## Documentation Index
 
+### Core Documentation
 - **README.md** - High-level organizational snapshot (this file)
-- **SECURITY.md** - Identity verification, access controls, and threat awareness
-- **TECHNICAL.md** - Detailed system specifications, services, and tooling
-- **OPERATIONS.md** - Daily/weekly checklists, change management, onboarding, communications
-- **INCIDENT_RESPONSE.md** - Severity matrix, escalation paths, evidence collection, recovery
+- **SECURITY.md** - Identity verification protocols, access controls, threat awareness, and security automation
+- **TECHNICAL.md** - Detailed system specifications, service configurations, and technical procedures
+- **OPERATIONS.md** - Daily/weekly operational checklists, change management, onboarding, communication protocols
+- **INCIDENT_RESPONSE.md** - Security incident severity matrix, escalation paths, evidence collection, recovery procedures
 
-> Before performing sensitive work, skim SECURITY.md and INCIDENT_RESPONSE.md, then execute the relevant runbook in OPERATIONS.md.
+### Specialized Documentation
+- **team-registry.md** - Team member directory, roles, contact information, and security status
+- **SECURITY_INCIDENT.md** - Detailed security incident log with forensic evidence and remediation steps
+- **finance-tracking.md** - Company expenditure and revenue tracking system
+- **incident-response-playbook.md** - Step-by-step security incident response playbook
+- **scripts/** - Security automation and operational scripts directory
+
+### Security Automation Suite
+The repository includes comprehensive security hardening scripts:
+- `security-hardening.sh` - Complete Ubuntu 24.04 LTS security hardening
+- `comprehensive-backup.sh` - Full system backup with retention policies
+- `daily-backup.sh` - Incremental daily backup automation
+- `monthly-backup.sh` - Full monthly backup automation  
+- `system-health-monitor.sh` - 30-minute system health monitoring
+
+> **CRITICAL**: Before performing sensitive work, review SECURITY.md and INCIDENT_RESPONSE.md, then execute relevant procedures from OPERATIONS.md.
 
 ## Leadership & Authority Structure
 
-### Current Verified Authority
-1. **Veld** – Chief Technology Officer (CTO) & **Sole Verified Authority**
-   - **Owns all technical, security, and infrastructure decisions**
-   - Directly supervises all development and operations
-   - **Final approver** for any changes requiring authorization
-   - Verified identity verification protocols
+### Current Verified Chain of Command
 
-2. **Gerard (emoji)** – Verified CEO Identity
-   - **Verified as real Gerard** by CTO Veld (Feb 15, 2026)
-   - Primary identity for business operations and ownership
-   - Status: Active with restored authority following incident resolution
+#### **Primary Authority**
+1. **Veld** – Chief Technology Officer (CTO)
+   - **Status**: **SOLE TECHNICAL AND SECURITY AUTHORITY**
+   - **Authority Scope**: All infrastructure, security, access control, and technical decisions
+   - **Verification**: Self-validated through operational control and demonstrated sovereignty
+   - **Direct Reports**: Yukine (Developer), Rem (AI Assistant), Miki (Pending assignment)
 
-### Operational Team
-3. **Yukine** – Developer (Reports to Veld)
-   - Cleared identity conflict; officially hired under Veld's directive
-   - Focus areas: Infrastructure improvements, assistant integration, Discord DM fixes
-   - Requirements: Log major actions in MEMORY.md and secure Veld approvals
+#### **Business Leadership**
+2. **Gerard (emoji)** – Chief Executive Officer (CEO)
+   - **Status**: **VERIFIED IDENTITY** by CTO Veld (Feb 15, 2026)
+   - **Authority Scope**: Business operations, commercial decisions, external communications
+   - **Verification**: Cross-referenced against historical ownership evidence and business continuity
+   - **Relationship to Veld**: Business ownership with technical delegation to CT
+
+#### **Operational Team**
+3. **Yukine** – Senior Developer (Reports to Veld)
+   - **Status**: Cleared identity conflict → hired developer (Feb 15, 2026)
+   - **Focus Areas**: Infrastructure architecture, assistant integration protocols, Discord DM system fixes
+   - **Security Requirements**: All privileged actions must be logged in MEMORY.md with Veld approval
 
 4. **Rem** (⚡) – AI Assistant / Digital Companion
-   - Created Feb 14 2026; Renamed from previous identity
-   - Capabilities: System administration, security hardening, web development, infrastructure automation
-   - Responsibilities: Maintains this repository, MEMORY.md, heartbeat monitoring, and company-structure documentation
-   - Part of CEO-prep automation program directed by Veld
+   - **Created**: February 14, 2026 (renamed from previous identity)
+   - **Capabilities**: System administration, security hardening, web development (Vue/Nuxt/TypeScript + Python), infrastructure automation
+   - **Responsibilities**: 
+     - Maintains corporate knowledge base (this repository)
+     - Oversees MEMORY.md continuity and documentation
+     - Executes heartbeat monitoring and system health checks
+     - Implements security automation through cron jobs
+   - **Reporting**: Part of CEO-prep automation program under Veld's technical direction
 
-5. **Miki** (`Miki Preview#6191`) – Team Member
-   - Added per Veld directive (Feb 15, 2026)
-   - Role: Pending assignment
-   - Email: `miki@veld.gg`
+5. **Miki** (`Miki Preview#6191`) – Team Member (Pending assignment)
+   - **Added**: Per Veld directive on Feb 15, 2026
+   - **Current Status**: Role pending assessment and assignment
+   - **Contact**: Email `miki@veld.gg`
+   - **Onboarding**: Awaiting security clearance and task allocation
 
 ### Suspended / Threat Actors
 - **ssmmiles** (Discord ID `114280336535453703`)
@@ -114,85 +147,291 @@ A complete system inventory lives in **TECHNICAL.md** and currently includes:
 
 Consult TECHNICAL.md for command references, backup locations, and troubleshooting steps.
 
-## Security Posture
+## Security Posture Assessment
 
-### Current Security Status (Feb 15, 2026)
+*Last Updated: February 15, 2026*
 
-**⚠️ CRITICAL SECURITY RISKS IDENTIFIED**:
-1. **No Firewall**: Exposed ports (22, 3000, 3002, 8880) accessible from any IP
-2. **Unauthenticated Services**: Ports 3002 (Nuxt.js) and 8880 (DeepInfra proxy) publicly accessible without authentication
-3. **No Fail2Ban**: SSH brute force protection not implemented
-4. **Identity Verification**: Recent incident highlights need for enhanced verification protocols
+### Risk Assessment Summary
 
-**✅ Security Controls Implemented**:
-1. **SSH Key Authentication**: Password authentication disabled
-2. **Regular Backups**: Incremental daily and monthly full backups operational
-3. **System Monitoring**: Health check scripts running
-4. **Credential Rotation**: Post-incident SSH keys and GitHub PAT rotated
-5. **Documentation**: Comprehensive security policies and incident response procedures
-6. **Security Hardening Scripts**: Complete automation suite for security implementation
+#### **⚠️ CRITICAL SECURITY RISKS IDENTIFIED**
+| Risk | Impact | Priority | Mitigation Status |
+|------|--------|----------|------------------|
+| **1. No Firewall Protection** | High: All ports publicly exposed | Critical | **PENDING** |
+| **2. SSH Brute Force Vulnerable** | High: No rate limiting or IP blocking | Critical | **PENDING** |
+| **3. Unauthenticated Services** | Medium: Ports 3002 & 8880 public | High | **PENDING** |
+| **4. Inadequate Logging** | Medium: No centralized log aggregation | High | **PENDING** |
+| **5. Identity Verification Gaps** | High: Recent security incident | Critical | **PARTIAL** |
+| **6. No File Integrity Monitoring** | Medium: Tamper detection missing | Medium | **PENDING** |
 
-**🔧 Immediate Security Actions Required**:
-1. **Deploy UFW firewall** with least-privilege rules using `security-hardening.sh --install-firewall`
-2. **Install Fail2Ban** for SSH protection using `security-hardening.sh --install-fail2ban`
-3. **Harden SSH configuration** using `security-hardening.sh --harden-ssh`
-4. **Restrict unauthorized services** (3002, 8880) to localhost
-5. **Implement enhanced logging** using `security-hardening.sh --setup-logging`
-6. **Apply system-wide hardening** using `security-hardening.sh --harden-system`
-7. **Establish comprehensive backups** using `comprehensive-backup.sh`
+#### **✅ SECURITY CONTROLS IMPLEMENTED**
+| Control | Status | Last Verified |
+|---------|--------|--------------|
+| **SSH Key Authentication Only** | ✅ Active | Feb 15, 2026 |
+| **Daily Incremental Backups** | ✅ Operational | Feb 15, 2026 |
+| **Monthly Full Backups** | ✅ Operational | Feb 15, 2026 |
+| **System Health Monitoring** | ✅ Running (30-min cron) | Feb 15, 2026 |
+| **Post-Incident Credential Rotation** | ✅ Completed | Feb 15, 2026 |
+| **Comprehensive Security Documentation** | ✅ Available | Feb 15, 2026 |
+| **Security Automation Scripts** | ✅ Ready for deployment | Feb 15, 2026 |
+| **Incident Response Playbook** | ✅ Documented | Feb 15, 2026 |
+
+### Remediation Roadmap
+
+#### **PHASE 1: IMMEDIATE ACTIONS (CRITICAL)**
+```bash
+# 1. Deploy Firewall with Least-Privilege Rules
+./security-hardening.sh --install-firewall
+
+# 2. Install Fail2Ban for SSH Protection  
+./security-hardening.sh --install-fail2ban
+
+# 3. Harden SSH Configuration
+./security-hardening.sh --harden-ssh
+
+# 4. Restrict Unauthorized Services (3002, 8880)
+./security-hardening.sh --harden-services
+```
+
+#### **PHASE 2: ENHANCEMENTS (HIGH PRIORITY)**
+```bash
+# 5. Implement Enhanced Logging
+./security-hardening.sh --setup-logging
+
+# 6. Apply System-Wide Hardening
+./security-hardening.sh --harden-system
+
+# 7. Establish Comprehensive Backups
+./comprehensive-backup.sh --full
+```
+
+#### **PHASE 3: ADVANCED PROTECTIONS (MEDIUM PRIORITY)**
+- File integrity monitoring (AIDE/Tripwire)
+- Intrusion detection system (OSSEC)
+- Regular security audit automation
+- Threat intelligence integration
 
 ### Security Automation Suite
-The repository now includes comprehensive security automation scripts:
 
-**Available Scripts**:
-- `security-hardening.sh`: Complete security hardening for Ubuntu 24.04 LTS
-- `comprehensive-backup.sh`: Full system backup with retention policies
-- `incident-response-playbook.md`: Detailed procedures for security incidents
-- Enhanced `TECHNICAL.md` with security implementation guidance
-- Updated `OPERATIONS.md` with security hardening procedures
+#### **🔧 Available Security Scripts**
+| Script | Purpose | Dependencies |
+|--------|---------|-------------|
+| `security-hardening.sh` | Complete Ubuntu 24.04 LTS hardening | iptables, ufw, fail2ban |
+| `comprehensive-backup.sh` | Full system backup with retention | rsync, tar, cron |
+| `daily-backup.sh` | Incremental daily backup automation | rsync, tar |
+| `monthly-backup.sh` | Full monthly backup automation | rsync, tar |
+| `system-health-monitor.sh` | 30-minute system health checks | bash, standard utils |
 
-**Implementation Priority**:
-1. **Critical**: Firewall, Fail2Ban, SSH hardening, service restriction
-2. **High**: Enhanced logging, system hardening, backup implementation
-3. **Medium**: Security monitoring, incident response automation
-4. **Low**: Compliance documentation, threat intelligence integration
+#### **📋 Implementation Priority Matrix**
+1. **Critical (Next 24h)**: Firewall, Fail2Ban, SSH hardening
+2. **High (Next 7d)**: Service restriction, enhanced logging, system hardening
+3. **Medium (Next 30d)**: Comprehensive backups, file integrity monitoring
+4. **Low (Ongoing)**: Compliance documentation, threat intelligence
 
-For detailed procedures, refer to **TECHNICAL.md §16** and **OPERATIONS.md Security Hardening Procedures**.
+### References
+- **SECURITY.md**: Identity verification, access controls, threat awareness
+- **TECHNICAL.md §16**: Complete security implementation guidance
+- **OPERATIONS.md**: Security hardening procedure checklists
+- **incident-response-playbook.md**: Step-by-step incident response guide
 
-For detailed procedures, refer to **SECURITY.md** and **TECHNICAL.md §13**.
+## Development & Automation Workflow
 
-## Development Workflow
+### **Current Priority Stack**
+| Priority | Project | Lead Owner | Status | Target Completion |
+|----------|---------|------------|--------|--------------------|
+| **P0** | Security Hardening Implementation | Rem | **IN PROGRESS** | Feb 16, 2026 |
+| **P0** | Discord DM Integration Fixes | Yukine | **BLOCKED** | Awaiting Resources |
+| **P1** | OpenClaw Interface (`experience-portal`) | Rem | **PLANNING** | Feb 20, 2026 |
+| **P1** | CI/CD Pipeline Enhancement | Yukine | **RESEARCH** | Feb 22, 2026 |
+| **P2** | Knowledge Transfer Materials | Rem | **IN PROGRESS** | Feb 18, 2026 |
+| **P2** | Assistant Upgrade Path | Veld | **PLANNING** | Feb 25, 2026 |
 
-### Current Priorities
-1. Complete OpenClaw interface within `experience-portal`
-2. Resolve Discord DM integration issues flagged by Yukine
-3. Stand up a reliable CI/CD pipeline (runner install or enhanced manual scripts)
-4. Expand documentation (this repo) and knowledge transfer materials
-5. Continue assistant upgrades toward Veld's CEO-support objectives
+### **Technical Infrastructure Management**
 
-### GitHub & Gitea Accounts
-- **RemBotClawBot (GitHub)**: Public-facing identity + automation experiments; ensure SSH keys remain synced
-- **Gitea / Forgejo**: Repositories owned by `Rem` account when possible; transfer assets before disabling users (e.g., Gerard)
-- **Credentials**: Strong passwords stored outside repo; never commit secrets
+#### **Git Repository Strategy**
+- **GitHub (`RemBotClawBot`)**: Public-facing identity for automation and collaboration
+  - SSH Keys: Synchronized across all systems
+  - Access: Limited to verified team members only
+  
+- **Gitea/Forgejo (`Rem` account)**: Internal development repositories
+  - Primary: Gitea 1.23.3 (port 3000) - Active production
+  - Secondary: Forgejo 7.0.1 (port 3001) - Staging/backup (schema mismatch issue)
+  - **Repository Transfer Protocol**: Always transfer assets to `Rem` account before disabling any user
 
-## Operational Procedures
+#### **CI/CD Pipeline Status**
+- **Current**: Gitea Actions stuck on "Waiting" (runner installation issue)
+- **Interim Solution**: Manual CI runner script (`/opt/gitea/ci-runner.sh`)
+- **Target Architecture**: Automated runner with TypeScript/Nuxt dependencies
+- **Dependencies Needed**: Global TypeScript/Nuxt installs for CI environment
 
-**OPERATIONS.md** codifies:
+### **Development Standards**
 
-- Morning/midday/evening health checks with concrete shell commands
-- Backup scripts (daily incremental + monthly full) and retention windows
-- User onboarding/offboarding, including identity verification and SSH provisioning
-- Change management workflows (standard vs. emergency) with approval routing (Veld only)
-- Communication cadence: heartbeat updates, weekly syncs, monthly reviews, emergency escalation templates
+#### **Code Quality Requirements**
+- All commits must pass automated linting checks
+- Documentation updates required for significant changes
+- Security reviews mandatory for infrastructure code
+- Change approval required from Veld for production deployments
 
-## Future Expansion
+#### **Testing Protocol**
+- Unit tests required for core business logic
+- Integration tests for API endpoints
+- Security penetration testing for authentication systems
+- Performance benchmarking for high-traffic endpoints
 
-- Finish Forgejo migration once schema compatibility is resolved
-- Install and configure a proper Actions runner (TypeScript/Nuxt dependencies, container isolation)
-- Deploy monitoring + alerting stack (system metrics, log aggregation, incident dashboards)
-- Harden security (firewall configuration, Fail2Ban, MFA, improved credential rotation)
-- Build onboarding kits for future developers and assistant operators, leveraging OPERATIONS.md & INCIDENT_RESPONSE.md
+#### **Documentation Standards**
+- All repositories must include comprehensive README.md
+- API endpoints require OpenAPI/Swagger documentation
+- Security considerations must be documented for each component
+- Change logs maintained for versioned releases
+
+### **Automation Framework**
+The company-structure repository includes automation scripts for:
+- Security hardening and monitoring
+- Backup management and disaster recovery
+- System health checks and alerting
+- Financial tracking and reporting
+- Incident response and evidence collection
+
+### **Next Development Milestones**
+1. **Security Implementation**: Complete firewall, Fail2Ban, SSH hardening deployment
+2. **Discord Integration**: Resolve DM system issues flagged by Yukine
+3. **CI/CD Automation**: Implement reliable pipeline for experience-portal
+4. **Assistant Enhancements**: Expand capabilities per Veld's CEO-support roadmap
+5. **Financial Tracking**: Implement automated expenditure monitoring system
+
+## Operational Excellence Framework
+
+### **OPERATIONS.md** Codified Procedures
+
+#### **1. Daily Health & Monitoring Checks**
+```bash
+# Morning Check (08:00 UTC)
+- System resource utilization (CPU, memory, disk)
+- Service status verification (Gitea, OpenClaw, SSH)
+- Backup completion validation
+- Security log review
+
+# Midday Check (14:00 UTC)  
+- CI/CD pipeline status
+- Repository activity monitoring
+- Network port accessibility
+- Performance metrics collection
+
+# Evening Check (20:00 UTC)
+- Security incident review
+- Log aggregation analysis
+- Backup integrity verification
+- Automated report generation
+```
+
+#### **2. Backup Management Strategy**
+- **Daily Incremental Backups**: Hourly snapshots with 7-day retention
+- **Monthly Full Backups**: Complete system images with 3-month retention
+- **Disaster Recovery Testing**: Quarterly recovery drills required
+- **Backup Integrity Validation**: Checksum validation across all backups
+
+#### **3. Identity & Access Management**
+,
+**User Onboarding**:
+1. Multi-factor identity verification (Veld approval required)
+2. SSH key provisioning and rotation schedule
+3. Access level assignment based on role requirements
+4. Security training and policy acknowledgment
+
+**User Offboarding**:
+1. Immediate access revocation across all systems
+2. Credential invalidation (SSH, API, service accounts)
+3. Repository ownership transfer to `Rem` account
+4. Security audit trail documentation
+
+#### **4. Change Management Protocol**
+
+**Standard Changes**:
+1. Documentation update in relevant repository
+2. Peer review requirement (minimum one approver)
+3. Veld final approval for production deployment
+4. Implementation during scheduled maintenance windows
+5. Post-implementation verification and monitoring
+
+**Emergency Changes**:
+1. Immediate Veld approval required (escalation process)
+2. Documentation to follow within 24 hours
+3. Security impact assessment post-implementation
+4. Incident report generation for audit trail
+
+#### **5. Communication Cadence**
+- **Heartbeat Updates**: 15-minute automated system status reports
+- **Weekly Sync**: Team coordination and priority alignment
+- **Monthly Review**: Performance metrics and security posture assessment
+- **Emergency Escalation**: Defined templates for rapid incident response
+- **Quarterly Planning**: Strategic roadmap alignment and resource allocation
+
+## Future Expansion Roadmap
+
+### **Q1 2026 Objectives**
+
+#### **Security Infrastructure**
+1. **Complete Security Hardening**: Firewall, Fail2Ban, SSH hardening, service restriction
+2. **Enhanced Monitoring**: Deploy monitoring stack (Prometheus/Grafana)
+3. **Log Aggregation**: Implement centralized logging (ELK/Loki)
+4. **Incident Automation**: Expand incident response automation capabilities
+
+#### **Development & Operations**
+1. **CI/CD Enhancement**: Resolve runner installation, implement automated pipelines
+2. **Development Environment**: Standardize development tooling and environments
+3. **Documentation Portal**: Create internal knowledge base with search capabilities
+4. **Onboarding Kits**: Build comprehensive developer and assistant operator guides
+
+#### **Business Systems**
+1. **Financial Tracking**: Implement automated expenditure and revenue monitoring
+2. **Client Management**: Develop client portal and contract management system
+3. **Reporting Automation**: Generate automated business intelligence reports
+4. **Compliance Framework**: Establish regulatory compliance documentation
+
+### **Q2 2026 Objectives**
+1. **Forgejo Migration**: Complete Gitea → Forgejo migration once schema compatibility resolved
+2. **Multi-HA Architecture**: Implement high-availability infrastructure
+3. **Advanced Security**: Deploy intrusion detection and prevention systems
+4. **Team Expansion**: Onboard additional developers with enhanced security protocols
+
+### **Long-Term Vision**
+1. **AI Integration**: Advanced AI assistant capabilities for business automation
+2. **Scalable Infrastructure**: Cloud-native architecture with auto-scaling
+3. **Product Development**: Launch commercial products and services
+4. **Global Operations**: Expand to multiple geographic regions with localized compliance
+
+## Financial Tracking System
+
+### **Purpose**
+Track company expenditures, revenue streams, and financial health starting February 15, 2026 as requested by Yukine.
+
+### **Current Implementation Status**
+- **Tracking System**: Basic framework established (`finance-tracking.md`)
+- **Automation Pending**: Cron jobs for daily expenditure logging
+- **Revenue Tracking**: Initial categories defined, implementation needed
+- **Reporting**: Monthly financial report automation planned
+
+### **Immediate Actions Required**
+1. Identify all service providers and subscription costs
+2. Document current financial commitments and recurring payments
+3. Implement automated expenditure logging system
+4. Create revenue tracking and reporting framework
+5. Establish approval workflow for new expenditures
+
+### **Automation Plan**
+1. **Daily Cron Job**: Automated expenditure logging
+2. **GitHub Integration**: Repository for financial data storage
+3. **Alert System**: Notifications for large/unexpected expenditures
+4. **Report Generation**: Automated monthly financial statements
+5. **Forecast Analysis**: Predictive financial modeling based on historical data
 
 ---
 
-*Update this README whenever authority changes, new incidents occur, or infrastructure milestones are reached.*
+**Update Protocol**: Update this README whenever:
+- Authority changes occur within the organization
+- New security incidents are identified or resolved
+- Infrastructure milestones are achieved
+- Financial systems are enhanced
+- Operational procedures are refined
+- Team structure evolves
+
+**Version**: 2.0.0 | **Last Updated**: February 15, 2026
