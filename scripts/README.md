@@ -86,12 +86,14 @@ This directory contains automation scripts for security hardening, backup operat
 
 | Script | Cron Job Set | Last Execution | Status |
 |--------|--------------|----------------|--------|
-| system-health-monitor.sh | ✅ Yes (every 30 min) | Feb 15, 2026 | Operational |
-| finance-daily.sh | ⚠️ Pending cron (`0 23 * * *`) | Manual runs only | Ready for deployment |
-| daily-backup.sh | ⚠️ Pending cron (`0 2 * * *`) | Manual runs only | Ready for deployment |
-| monthly-backup.sh | ⚠️ Pending cron (`0 3 1 * *`) | Manual runs only | Ready for deployment |
-| security-verify.sh | ⚠️ Pending cron (`0 9 * * *`) | Not yet run | Ready for deployment |
-| backup-verify.sh | ⚠️ Pending cron (`0 4 * * 0`) | Not yet run | Ready for deployment |
+| system-health-monitor.sh | ✅ Yes (`*/30 * * * *`) | Feb 15, 2026 | Operational |
+| finance-daily.sh | ✅ Yes (`0 23 * * *`) | Feb 15, 2026 | Operational |
+| daily-backup.sh | ✅ Yes (`0 2 * * *`) | Scheduled for Feb 16, 2026 | Ready |
+| monthly-backup.sh | ✅ Yes (`0 3 1 * *`) | Scheduled for Mar 1, 2026 | Ready |
+| security-verify.sh | ✅ Yes (`0 9 * * *`) | Scheduled for Feb 16, 2026 | Ready |
+| backup-verify.sh | ✅ Yes (`0 4 * * 0`) | Scheduled for Feb 16, 2026 | Ready |
+| security-hardening.sh | ⚠️ Manual execution | Not yet run | Critical - Immediate action |
+| comprehensive-backup.sh | ⚠️ Manual execution | Not yet run | High priority |
 
 ## Security Compliance
 
