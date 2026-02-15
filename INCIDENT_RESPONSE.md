@@ -727,3 +727,33 @@ fi
 ---
 
 *This playbook is a living document. Update after every incident and during quarterly reviews. All team members must be familiar with their roles and responsibilities.*
+
+### Scenario 8: Automated Health Monitor Alert
+
+#### Detection
+- `/root/company-structure/scripts/system-health-monitor.sh` exits with non-zero status or appends a CRITICAL entry to `/var/log/system-alerts.log`.
+- Cron mail (if configured) or Discord webhook (future) delivers the alert outside scheduled heartbeats.
+
+#### Response
+```bash
+# 1. Review latest health log
+sudo tail -200 /var/log/system-health.log
+
+# 2. Inspect alert log for context
+sudo tail -100 /var/log/system-alerts.log
+
+# 3. Take corrective action (examples)
+# - Restart failed service: systemctl restart <service>
+# - Investigate resource spike: top, ps aux --sort=-%mem | head
+# - Check ports: ss -tlnp | grep <port>
+
+# 4. Re-run monitor script manually to confirm recovery
+sudo /root/company-structure/scripts/system-health-monitor.sh
+```
+
+#### Escalation & Documentation
+1. Classify severity based on impacted component (e.g., Gitea down = Severity 2, disk 95% = Severity 3).
+2. Notify Veld immediately for Severity ≤2; otherwise brief Yukine within the 4-hour window.
+3. Add a short summary to MEMORY.md and, if user-facing services were down, update README incident timeline + SECURITY_INCIDENT.md.
+4. Capture any tuning performed on thresholds or cron schedules to maintain traceability.
+

@@ -116,133 +116,33 @@ journalctl _SYSTEMD_UNIT=sshd.service --since "24 hours ago"
 
 ### Backup Procedures
 
+#### Script Inventory
+| Script | Location | Purpose | Log File | Retention |
+|--------|----------|---------|----------|-----------|
+| Daily Incremental Backup | `scripts/daily-backup.sh` | Captures working Gitea data + configs every night | `/var/log/daily-backup.log` | 7 days of daily snapshots |
+| Monthly Full Backup | `scripts/monthly-backup.sh` | Creates service-stopped tarball of Gitea, OpenClaw config, SSH keys | `/var/log/monthly-backup.log` | 12 monthly archives |
+| System Health Monitor | `scripts/system-health-monitor.sh` | 30-min sweeps of CPU/RAM/disk/services/ports | `/var/log/system-health.log` (+ `/var/log/system-alerts.log`) | N/A |
+
+All scripts live in this repository under `scripts/` (tracked in git) and should be copied to `/root/company-structure/scripts/` on the host with executable permissions. After every edit, re-run `chmod +x` to keep them executable.
+
 #### Daily Incremental Backup
-```bash
-#!/bin/bash
-# /opt/scripts/daily-backup.sh
-BACKUP_DIR="/opt/gitea/data.backup/daily"
-DATE=$(date +%Y%m%d)
-mkdir -p "$BACKUP_DIR/$DATE"
-
-# Backup Gitea data
-rsync -av --delete /opt/gitea/data/ "$BACKUP_DIR/$DATE/data/"
-
-# Backup configuration files
-cp /opt/gitea/app.ini "$BACKUP_DIR/$DATE/app.ini.backup"
-cp /root/.openclaw/config.yaml "$BACKUP_DIR/$DATE/config.yaml.backup"
-
-# Backup SSH keys
-cp -r ~/.ssh "$BACKUP_DIR/$DATE/ssh.backup/"
-
-# Rotate old backups (keep 7 days)
-find "$BACKUP_DIR" -type d -mtime +7 -exec rm -rf {} \;
-```
+- **Command**: `sudo /root/company-structure/scripts/daily-backup.sh`
+- **What it does**: rsyncs `/opt/gitea/data`, captures `/opt/gitea/app.ini`, `/root/.openclaw/config.yaml`, and SSH keys into `/opt/gitea/data.backup/daily/<YYYYMMDD>/` with a JSON manifest and retention pruning.
+- **Cron**: `0 2 * * * root /root/company-structure/scripts/daily-backup.sh` (edit `/etc/crontab`).
+- **Verification**: inspect `/var/log/daily-backup.log` and `manifest.json` in the latest backup folder; log results in MEMORY.md if anomalies appear.
 
 #### Monthly Full Backup
-```bash
-#!/bin/bash
-# /opt/scripts/monthly-backup.sh
-BACKUP_DIR="/opt/gitea/data.backup/monthly"
-DATE=$(date +%Y%m)
-mkdir -p "$BACKUP_DIR/$DATE"
-
-# Log start time
-echo "Monthly backup started at $(date)" | tee "$BACKUP_DIR/$DATE/backup.log"
-
-# Stop services temporarily
-echo "Stopping Gitea service..."
-systemctl stop gitea
-
-# Full filesystem backup
-echo "Creating full backup archive..."
-tar -czf "$BACKUP_DIR/$DATE/full-backup.tar.gz" \
-  /opt/gitea \
-  /root/.openclaw \
-  ~/.ssh \
-  /etc/ssh \
-  2>&1 | tee -a "$BACKUP_DIR/$DATE/backup.log"
-
-# Generate checksums for verification
-echo "Generating checksums..."
-find /opt/gitea -type f -exec md5sum {} \; > "$BACKUP_DIR/$DATE/checksums.md5" 2>/dev/null
-
-# Restart services
-echo "Restarting Gitea service..."
-systemctl start gitea
-
-# Verify backup integrity
-echo "Verifying backup integrity..."
-tar -tzf "$BACKUP_DIR/$DATE/full-backup.tar.gz" > /dev/null
-if [ $? -eq 0 ]; then
-    echo "Backup verification: SUCCESS" | tee -a "$BACKUP_DIR/$DATE/backup.log"
-    echo "Backup size: $(du -h "$BACKUP_DIR/$DATE/full-backup.tar.gz" | cut -f1)" | tee -a "$BACKUP_DIR/$DATE/backup.log"
-else
-    echo "Backup verification: FAILED" | tee -a "$BACKUP_DIR/$DATE/backup.log"
-    exit 1
-fi
-
-# Retention policy: Keep 12 monthly backups
-echo "Applying retention policy..."
-find "$BACKUP_DIR" -name "full-backup.tar.gz" -type f -mtime +365 -delete
-find "$BACKUP_DIR" -type d -empty -delete
-
-echo "Monthly backup completed at $(date)" | tee -a "$BACKUP_DIR/$DATE/backup.log"
-```
+- **Command**: `sudo /root/company-structure/scripts/monthly-backup.sh`
+- **What it does**: stops Gitea, archives `/opt/gitea`, the OpenClaw runtime, and SSH config into `/opt/gitea/data.backup/monthly/full-backup-<YYYYMM>.tar.gz`, restarts services, verifies archive integrity, and enforces a 12-month retention policy.
+- **Cron**: `0 3 1 * * root /root/company-structure/scripts/monthly-backup.sh`.
+- **Recovery test**: run `tar -tzf /opt/gitea/data.backup/monthly/<YYYYMM>/full-backup.tar.gz | head` after each backup and perform a full restore rehearsal quarterly.
 
 #### Automated Monitoring Script
-```bash
-#!/bin/bash
-# /opt/scripts/system-health-monitor.sh
-LOG_FILE="/var/log/system-health.log"
-THRESHOLD_CPU=90
-THRESHOLD_MEMORY=90
-THRESHOLD_DISK=85
-
-echo "=== System Health Check $(date) ===" | tee -a "$LOG_FILE"
-
-# CPU Usage
-CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}' | cut -d'.' -f1)
-echo "CPU Usage: ${CPU_USAGE}%" | tee -a "$LOG_FILE"
-if [ "$CPU_USAGE" -gt "$THRESHOLD_CPU" ]; then
-    echo "WARNING: High CPU usage detected!" | tee -a "$LOG_FILE"
-fi
-
-# Memory Usage
-MEMORY_USAGE=$(free | grep Mem | awk '{print $3/$2 * 100.0}' | cut -d'.' -f1)
-echo "Memory Usage: ${MEMORY_USAGE}%" | tee -a "$LOG_FILE"
-if [ "$MEMORY_USAGE" -gt "$THRESHOLD_MEMORY" ]; then
-    echo "WARNING: High memory usage detected!" | tee -a "$LOG_FILE"
-fi
-
-# Disk Usage
-DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
-echo "Disk Usage: ${DISK_USAGE}%" | tee -a "$LOG_FILE"
-if [ "$DISK_USAGE" -gt "$THRESHOLD_DISK" ]; then
-    echo "WARNING: High disk usage detected!" | tee -a "$LOG_FILE"
-fi
-
-# Service Status
-SERVICES=("gitea" "fail2ban" "ufw")
-for SERVICE in "${SERVICES[@]}"; do
-    if systemctl is-active --quiet "$SERVICE"; then
-        echo "Service $SERVICE: ACTIVE" | tee -a "$LOG_FILE"
-    else
-        echo "ALERT: Service $SERVICE: INACTIVE" | tee -a "$LOG_FILE"
-    fi
-done
-
-# Port Availability
-PORTS=("22" "3000")
-for PORT in "${PORTS[@]}"; do
-    if ss -tln | grep -q ":$PORT "; then
-        echo "Port $PORT: LISTENING" | tee -a "$LOG_FILE"
-    else
-        echo "ALERT: Port $PORT: NOT LISTENING" | tee -a "$LOG_FILE"
-    fi
-done
-
-echo "=== Check Complete ===" | tee -a "$LOG_FILE"
-```
+- **Command**: `sudo /root/company-structure/scripts/system-health-monitor.sh`
+- **Signals**: writes OK/Warning/Critical summaries, tracks CPU, memory, disk, swap, key services (gitea/ssh/openclaw/fail2ban/ufw), listening ports (22/3000/3002/8880/18789), connectivity checks, and recent SSH failures.
+- **Alerts**: critical findings append to `/var/log/system-alerts.log`. Integrate the placeholder webhook in the script once a Discord/Slack endpoint is provisioned.
+- **Cron**: `*/30 * * * * root /root/company-structure/scripts/system-health-monitor.sh`.
+- **Follow-up**: non-zero exit status or new entries in `/var/log/system-alerts.log` should trigger an incident review; summarize the outcome in MEMORY.md + INCIDENT_RESPONSE.md when applicable.
 
 ### Service Management
 

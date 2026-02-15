@@ -425,3 +425,19 @@ systemctl start fail2ban
 ---
 
 *Update this document after any infrastructure change, migration attempt, or significant hardware/network adjustment.*
+
+## 15. Automation & Cron Inventory
+
+| Name | Script | Schedule | Description |
+|------|--------|----------|-------------|
+| Daily Incremental Backup | `scripts/daily-backup.sh` | `0 2 * * *` | Rsync-based snapshot of Gitea data, configs, SSH keys with manifest + 7-day retention |
+| Monthly Full Backup | `scripts/monthly-backup.sh` | `0 3 1 * *` | Stops Gitea, captures full tarball of infra artifacts, validates archive integrity, enforces 12-month retention |
+| System Health Monitor | `scripts/system-health-monitor.sh` | `*/30 * * * *` | Polls CPU/RAM/disk, service status, ports, and SSH auth logs; escalates via log files / future webhooks |
+
+**Deployment notes**
+1. Scripts live in-repo under `scripts/` and should be symlinked or copied to `/root/company-structure/scripts/`.
+2. After modifying scripts, re-run `chmod +x scripts/*.sh` to preserve execute bits and redeploy to `/etc/crontab`.
+3. Logs land in `/var/log/daily-backup.log`, `/var/log/monthly-backup.log`, `/var/log/system-health.log`, and `/var/log/system-alerts.log`.
+4. Failed runs exit non-zero; monitor via `grep CRITICAL /var/log/system-alerts.log` during heartbeats.
+5. When cron is unavailable (e.g., sandbox), scripts can be executed manually as root with `bash scripts/<name>.sh`.
+

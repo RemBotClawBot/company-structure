@@ -142,6 +142,13 @@ last | head -20
 - Validate firewall/Fail2Ban rules (once implemented)
 - Refresh security roadmap milestones
 
+### 4.4 Automated Monitoring Hooks
+- `scripts/system-health-monitor.sh` runs every 30 minutes and logs detailed status reports to `/var/log/system-health.log` plus escalations in `/var/log/system-alerts.log`.
+- Critical triggers (service down, CPU/memory saturation, unexpected port closure, spike in SSH failures) must be reviewed immediately and escalated per INCIDENT_RESPONSE.md severity matrix.
+- Integrate the script’s webhook stub with Discord/Slack once credentials are approved so critical alerts page the on-call human within 5 minutes.
+- During heartbeats, include a short summary of the last health check, even if all clear, to prove monitoring continuity.
+- Store parsed summaries in MEMORY.md when anomalies occur to preserve an audit trail.
+
 ## 5. Incident Response Alignment
 
 Reference **INCIDENT_RESPONSE.md** for detailed playbooks. Highlights:

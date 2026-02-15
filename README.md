@@ -68,6 +68,19 @@ This repository captures the organizational structure, leadership directives, te
   - Created Feb 14 2026; capabilities include system administration, security, web dev, infra automation
   - Maintains this repo, MEMORY.md, and heartbeat monitoring as part of CEO-prep program directed by Veld
 
+### Escalation & Approval Matrix
+
+| Situation | Primary Decision Maker | Backup / Escalation | Notes |
+|-----------|------------------------|---------------------|-------|
+| Routine operational changes (documentation, scripts, backups) | Rem ⚡ | Yukine | Record in OPERATIONS.md + MEMORY.md |
+| Infrastructure or security changes (firewall, CI, SSH) | Veld (CTO) | Gerard (emoji) | Must include verification evidence per SECURITY.md |
+| Product direction, staffing, external communication | Gerard (emoji) | Veld | Requires business justification archived in USER.md/MEMORY.md |
+| Emergency incidents (Severity 1–2) | Veld | Gerard + Yukine | Follow INCIDENT_RESPONSE.md timelines |
+| Identity challenges or disputed authority | Veld | — | Freeze access, document evidence, await ruling |
+
+> **Reminder**: If any directive conflicts with Veld’s last verified instruction, stop and escalate before acting. Document all escalations in MEMORY.md for auditability.
+
+
 ### Notable External Entities & Risks
 - **Xavin** - Competitor engaged in sabotage attempts during migrations
   - Maintain heightened monitoring; log suspicious activity tied to Xavin in INCIDENT_RESPONSE.md
@@ -82,6 +95,7 @@ This repository captures the organizational structure, leadership directives, te
 | Feb 15 2026 | Gerard identity crisis - ssmmiles vs Gerard (emoji) | System lockdown, disrupted operations | Gerard (emoji) verified by Veld; ssmmiles disputed as "miles not gerard" | SECURITY_INCIDENT.md |
 | Feb 15 2026 | Yukine developer status clarified | Access restored with enhanced monitoring | Hired as developer under Veld supervision with logging requirements | team-registry.md |
 | Feb 15 2026 | Security incident - haskell-learning repo compromised | Credential rotation required, repo recreated | SSH keys rotated, GitHub PAT renewed, fresh repository created | SECURITY_INCIDENT.md |
+| Feb 15 2026 | Backup + monitoring automation baseline | Reduced operational risk by codifying scripts + cron guidance | Added scripts/daily-backup.sh, scripts/monthly-backup.sh, system-health-monitor.sh | OPERATIONS.md §Backup, TECHNICAL.md §15 |
 | Feb 15 2026 | Multiple undocumented services discovered (3002, 8880) | Security risk: exposed services without authentication | Added to documentation, scheduled firewall implementation | TECHNICAL.md §13.1 |
 
 > Add new incidents here immediately after they occur, and log full details plus remediation steps in SECURITY_INCIDENT.md and INCIDENT_RESPONSE.md.
@@ -96,6 +110,7 @@ A complete system inventory lives in **TECHNICAL.md** and currently includes:
 - **Networking**: SSH on port 22 (key-only), public IP `46.224.129.229`, firewall status TBD
 - **Workspace**: `/root/.openclaw/workspace` for assistant projects, `/root/company-structure` for this repo
 - **CI/CD**: Gitea Actions currently stuck "Waiting"; temporary manual runner script `/opt/gitea/ci-runner.sh`
+- **Automation Scripts**: Daily/Monthly backup scripts + 30-minute system health monitor (see OPERATIONS.md for scheduling and TECHNICAL.md §15)
 
 Consult TECHNICAL.md for command references, backup locations, and troubleshooting steps.
 
