@@ -130,12 +130,34 @@ Consult TECHNICAL.md for command references, backup locations, and troubleshooti
 3. **System Monitoring**: Health check scripts running
 4. **Credential Rotation**: Post-incident SSH keys and GitHub PAT rotated
 5. **Documentation**: Comprehensive security policies and incident response procedures
+6. **Security Hardening Scripts**: Complete automation suite for security implementation
 
 **🔧 Immediate Security Actions Required**:
-1. Deploy UFW firewall with least-privilege rules
-2. Restrict unauthorized services (3002, 8880) to localhost
-3. Install and configure fail2ban for SSH protection
-4. Regular security audits via healthcheck skill
+1. **Deploy UFW firewall** with least-privilege rules using `security-hardening.sh --install-firewall`
+2. **Install Fail2Ban** for SSH protection using `security-hardening.sh --install-fail2ban`
+3. **Harden SSH configuration** using `security-hardening.sh --harden-ssh`
+4. **Restrict unauthorized services** (3002, 8880) to localhost
+5. **Implement enhanced logging** using `security-hardening.sh --setup-logging`
+6. **Apply system-wide hardening** using `security-hardening.sh --harden-system`
+7. **Establish comprehensive backups** using `comprehensive-backup.sh`
+
+### Security Automation Suite
+The repository now includes comprehensive security automation scripts:
+
+**Available Scripts**:
+- `security-hardening.sh`: Complete security hardening for Ubuntu 24.04 LTS
+- `comprehensive-backup.sh`: Full system backup with retention policies
+- `incident-response-playbook.md`: Detailed procedures for security incidents
+- Enhanced `TECHNICAL.md` with security implementation guidance
+- Updated `OPERATIONS.md` with security hardening procedures
+
+**Implementation Priority**:
+1. **Critical**: Firewall, Fail2Ban, SSH hardening, service restriction
+2. **High**: Enhanced logging, system hardening, backup implementation
+3. **Medium**: Security monitoring, incident response automation
+4. **Low**: Compliance documentation, threat intelligence integration
+
+For detailed procedures, refer to **TECHNICAL.md §16** and **OPERATIONS.md Security Hardening Procedures**.
 
 For detailed procedures, refer to **SECURITY.md** and **TECHNICAL.md §13**.
 

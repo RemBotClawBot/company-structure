@@ -14,24 +14,59 @@
 ```bash
 # 1. System Status
 systemctl status gitea
-ss -tlnp | grep -E "(22|3000)"
+ss -tlnp | grep -E "(22|3000|3001|3002|8880)"
 df -h /
+free -h
 
 # 2. Service Accessibility
 curl -s http://localhost:3000/healthz
 curl -s http://46.224.129.229:3000/
+curl -s http://localhost:3002/ || echo "Nuxt app not responding"
+curl -s http://localhost:8880/ || echo "DeepInfra proxy not responding"
 
 # 3. Backup Verification
 ls -lah /opt/gitea/data.backup/
 du -sh /opt/gitea/data/
+ls -lah /var/backups/company-structure/daily/ | tail -5
 
 # 4. Log Review
-tail -100 /var/log/syslog | grep -i "(error|fail|warn)"
+tail -100 /var/log/syslog | grep -i "(error\|fail\|warn)"
 journalctl -u gitea --since "24 hours ago" | tail -50
+tail -50 /var/log/auth.log | grep -i "failed\|invalid"
 
-# 5. Repository Status
+# 5. Security Check
+ufw status verbose 2>/dev/null || echo "UFW not installed"
+fail2ban-client status sshd 2>/dev/null || echo "Fail2Ban not installed"
+ss -tlnp | grep -E "(22|3000|3001|3002|8880)" | grep -v "127.0.0.1" | wc -l
+
+# 6. Repository Status
 cd /root/company-structure && git status
 cd /root/.openclaw/workspace && git status
+```
+
+### Security Morning Check (08:15 UTC)
+```bash
+# 1. Security Log Review
+journalctl -u auditd --since "24 hours ago" | tail -50
+fail2ban-client status sshd
+ufw status numbered
+
+# 2. Intrusion Detection
+last | head -20
+who
+ps aux | grep -E "(cryptominer\|backdoor\|suspicious)"
+
+# 3. File Integrity Check
+stat /etc/passwd
+stat /etc/shadow
+stat /etc/sudoers
+ls -la /opt/gitea/app.ini
+
+# 4. Certificate Expiry Check (when SSL implemented)
+# openssl x509 -in /etc/ssl/certs/cert.pem -noout -dates
+
+# 5. Disk Encryption Status (if implemented)
+# cryptsetup status /dev/sda1
 ```
 
 ### Midday Maintenance (12:00 UTC)
@@ -422,6 +457,116 @@ time curl -s -o /dev/null -w "%{time_total}" http://localhost:3000/
 - **Lead Time for Changes**: TBD
 - **Mean Time to Recovery**: TBD
 - **Change Failure Rate**: TBD
+
+## Security Hardening Procedures
+
+### Phase 1: Critical Security Updates (Immediate Implementation)
+```bash
+# 1. Install and configure UFW firewall
+bash /root/company-structure/scripts/security-hardening.sh --install-firewall
+
+# 2. Install Fail2Ban for SSH protection  
+bash /root/company-structure/scripts/security-hardening.sh --install-fail2ban
+
+# 3. Harden SSH configuration
+bash /root/company-structure/scripts/security-hardening.sh --harden-ssh
+
+# 4. Restrict exposed services (3002, 8880) to localhost
+# Update Nuxt.js startup to bind to 127.0.0.1 instead of 0.0.0.0
+# Update DeepInfra proxy.py to bind to 127.0.0.1
+```
+
+### Phase 2: Enhanced Monitoring (Day 1 Implementation)
+```bash
+# 1. Set up enhanced system logging
+bash /root/company-structure/scripts/security-hardening.sh --setup-logging
+
+# 2. Configure security monitoring
+bash /root/company-structure/scripts/security-hardening.sh --harden-system
+
+# 3. Create comprehensive backup plan
+bash /root/company-structure/scripts/security-hardening.sh --all
+
+# 4. Implement daily security scans
+crontab -l | grep "security-scan.sh" || echo "0 2 * * * root /root/company-structure/scripts/security-scan.sh" >> /etc/crontab
+```
+
+### Phase 3: Ongoing Security Operations
+#### Weekly Security Tasks
+```bash
+# Monday: Security Audit
+# Review all security logs from previous week
+# Check for failed SSH attempts, unauthorized access
+# Review firewall rules and open ports
+
+# Wednesday: System Hardening
+# Apply security updates
+# Rotate credentials if needed
+# Review backup integrity
+
+# Friday: Threat Intelligence Review
+# Check for new security vulnerabilities
+# Update threat awareness based on competitor activity
+# Review incident response readiness
+```
+
+#### Monthly Security Review
+1. **Access Review**: Audit all user accounts and permissions
+2. **Log Analysis**: Review security logs for patterns
+3. **Backup Test**: Verify backup restoration procedure
+4. **Policy Update**: Update security policies based on new threats
+5. **Training**: Conduct security awareness briefing
+
+### Security Compliance Checklist
+- [ ] UFW firewall installed and configured
+- [ ] Fail2Ban protecting SSH
+- [ ] SSH hardened with modern cryptography
+- [ ] Exposed services (3002, 8880) restricted to localhost
+- [ ] Enhanced logging (auditd) enabled
+- [ ] Regular security updates automated
+- [ ] Comprehensive backup system operational
+- [ ] Incident response procedures documented
+- [ ] Security monitoring alerts configured
+- [ ] Regular security audits scheduled
+- [ ] Team security training completed
+- [ ] Threat intelligence monitoring implemented
+
+### Automated Security Monitoring
+```bash
+# Daily Security Scan Cron Job
+0 2 * * * root /root/company-structure/scripts/daily-security-scan.sh
+
+# Weekly Vulnerability Scan
+0 4 * * 1 root /root/company-structure/scripts/weekly-vulnerability-scan.sh
+
+# Monthly Security Report Generation
+0 6 1 * * root /root/company-structure/scripts/monthly-security-report.sh
+```
+
+### Incident Response Automation
+The `incident-response-playbook.md` provides:
+- Automated evidence collection scripts
+- Containment procedures for common attack vectors
+- Recovery playbooks for compromised services
+- Post-incident analysis templates
+- Stakeholder communication templates
+
+### Backup and Recovery Testing Schedule
+```bash
+# Monthly Backup Restoration Test
+0 8 15 * * root /root/company-structure/scripts/test-backup-restore.sh
+
+# Quarterly Disaster Recovery Drill
+0 10 1 */3 * root /root/company-structure/scripts/disaster-recovery-drill.sh
+```
+
+### Security Metrics and Reporting
+- **Mean Time to Detect (MTTD)**: Time from incident start to detection
+- **Mean Time to Respond (MTTR)**: Time from detection to containment
+- **Monthly Security Incidents**: Count and severity of incidents
+- **Patch Compliance Rate**: Percentage of security patches applied
+- **Backup Success Rate**: Percentage of successful backups
+- **Failed Login Attempts**: Count and source of failed attempts
 
 ---
 

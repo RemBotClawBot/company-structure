@@ -433,6 +433,7 @@ systemctl start fail2ban
 | Daily Incremental Backup | `scripts/daily-backup.sh` | `0 2 * * *` | Rsync-based snapshot of Gitea data, configs, SSH keys with manifest + 7-day retention |
 | Monthly Full Backup | `scripts/monthly-backup.sh` | `0 3 1 * *` | Stops Gitea, captures full tarball of infra artifacts, validates archive integrity, enforces 12-month retention |
 | System Health Monitor | `scripts/system-health-monitor.sh` | `*/30 * * * *` | Polls CPU/RAM/disk, service status, ports, and SSH auth logs; escalates via log files / future webhooks |
+| Security Hardening Suite | `scripts/security-hardening.sh` | Manual Execution Only | Comprehensive security hardening automation for Ubuntu 24.04 LTS - use with caution |
 
 **Deployment notes**
 1. Scripts live in-repo under `scripts/` and should be symlinked or copied to `/root/company-structure/scripts/`.
@@ -440,4 +441,142 @@ systemctl start fail2ban
 3. Logs land in `/var/log/daily-backup.log`, `/var/log/monthly-backup.log`, `/var/log/system-health.log`, and `/var/log/system-alerts.log`.
 4. Failed runs exit non-zero; monitor via `grep CRITICAL /var/log/system-alerts.log` during heartbeats.
 5. When cron is unavailable (e.g., sandbox), scripts can be executed manually as root with `bash scripts/<name>.sh`.
+
+## 16. Comprehensive Security Hardening Procedures
+
+### 16.1 Security Hardening Script (`scripts/security-hardening.sh`)
+This comprehensive script implements multiple security hardening measures for Ubuntu 24.04 LTS:
+
+**Features**:
+- UFW firewall installation and configuration
+- Fail2Ban installation and SSH brute force protection
+- SSH hardening with modern cryptography
+- Enhanced system logging with auditd
+- Security monitoring with logwatch
+- System-wide hardening via sysctl
+- Comprehensive backup plan creation
+
+**Usage**:
+```bash
+# Run all hardening steps (requires root)
+sudo bash scripts/security-hardening.sh --all
+
+# Run individual components
+sudo bash scripts/security-hardening.sh --install-firewall
+sudo bash scripts/security-hardening.sh --harden-ssh
+sudo bash scripts/security-hardening.sh --setup-logging
+```
+
+**Warning**: This script makes significant changes to system configuration. Review the script thoroughly before execution and test in a non-production environment first.
+
+### 16.2 Comprehensive Backup Script (`scripts/comprehensive-backup.sh`)
+Creates comprehensive system backups including:
+- Company-structure repository
+- Gitea data and configuration
+- OpenClaw workspace
+- System configurations (SSH, UFW, Fail2Ban)
+- Recent system logs
+- Rotates old backups automatically
+
+**Backup Retention**:
+- Daily backups: Keep 7 days
+- Weekly backups: Keep 30 days
+- Monthly backups: Keep 365 days
+
+### 16.3 Incident Response Automation
+The `incident-response-playbook.md` provides detailed procedures for:
+- Incident classification and severity levels
+- Response team roles and escalation chains
+- Investigation and evidence collection procedures
+- Containment, eradication, and recovery steps
+- Post-incident activities and reporting templates
+
+### 16.4 Security Implementation Priority
+
+#### Critical (Immediate)
+1. **UFW Firewall Configuration**
+   ```bash
+   sudo bash scripts/security-hardening.sh --install-firewall
+   ```
+2. **Fail2Ban SSH Protection**
+   ```bash
+   sudo bash scripts/security-hardening.sh --install-fail2ban
+   ```
+3. **Service Restriction** (Manual configuration required)
+   - Restrict ports 3002 and 8880 to localhost only
+   - Implement BasicAuth or reverse proxy
+
+#### High (Next 48 Hours)
+4. **SSH Hardening**
+   ```bash
+   sudo bash scripts/security-hardening.sh --harden-ssh
+   ```
+5. **Enhanced Logging**
+   ```bash
+   sudo bash scripts/security-hardening.sh --setup-logging
+   ```
+6. **System Hardening**
+   ```bash
+   sudo bash scripts/security-hardening.sh --harden-system
+   ```
+
+#### Medium (Next Week)
+7. **Comprehensive Backups**
+   ```bash
+   sudo bash scripts/comprehensive-backup.sh
+   ```
+8. **Regular Security Monitoring**
+   - Implement daily security scan cron job
+   - Set up alerting for suspicious activity
+9. **Certificate Management**
+   - Implement SSL/TLS for all services
+   - Automate certificate renewal
+
+#### Low (Ongoing)
+10. **Security Policy Updates**
+    - Regular review of security policies
+    - Employee security training updates
+    - Penetration testing procedures
+11. **Compliance Documentation**
+    - Maintain compliance with industry standards
+    - Regular security audit preparation
+12. **Threat Intelligence Integration**
+    - Subscribe to security bulletins
+    - Implement threat intelligence feeds
+
+### 16.5 Security Monitoring Dashboard
+To be implemented:
+```bash
+# Daily security report generation
+0 8 * * * root /usr/sbin/logwatch --output mail --mailto security@company.com
+
+# Weekly security scan
+0 2 * * 1 root /root/company-structure/scripts/security-scan.sh
+
+# Real-time alerting (to be implemented)
+*/5 * * * * root /root/company-structure/scripts/security-alert.sh
+```
+
+### 16.6 Incident Response Checklist Integration
+The playbook includes automated checklists for:
+- Phase 1: Detection & Analysis
+- Phase 2: Containment
+- Phase 3: Eradication
+- Phase 4: Recovery
+- Phase 5: Post-Incident Activities
+
+Each checklist can be automated with appropriate monitoring tools.
+
+### 16.7 Evidence Preservation Procedures
+Automated evidence collection scripts will be created to:
+1. Capture system state during incidents
+2. Preserve logs and configuration files
+3. Maintain chain of custody documentation
+4. Archive evidence for regulatory compliance
+
+---
+
+*Update this document after implementing security hardening measures. Maintain regular security reviews and updates.*
+
+
 
