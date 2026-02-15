@@ -379,8 +379,14 @@ backup_finance_data() {
 main() {
     echo "Starting daily finance tracking..."
     
+    # Gather system data
+    local system_data_file=$(gather_system_financial_data)
+    
     # Generate daily report
-    generate_daily_report "$(date '+%Y-%m-%d %H:%M:%S')" "$DAILY_LOG"
+    generate_daily_report "$(date '+%Y-%m-%d %H:%M:%S')" "$DAILY_LOG" "$system_data_file"
+    
+    # Clean up temporary file
+    rm -f "$system_data_file"
     
     # Backup finance data
     backup_finance_data
