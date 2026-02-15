@@ -84,33 +84,121 @@ fail2ban-client status
 
 ### **Phase 2: Service Security**
 
-#### **2.1 Restricting Unauthorized Services**
+#### **2.1 Discovered Services and Security Assessment**
+**Last Updated: February 15, 2026**
+
+**Service Inventory:**
+1. **Gitea Git Service** (Port 3000)
+   - **Status**: ✅ Running - PID 1632
+   - **Authentication**: ✅ Enabled (standard Git authentication)
+   - **Firewall Status**: Publicly accessible
+   - **Recommendation**: Add HTTPS termination and enable HTTP Strict Transport Security
+
+2. **SSH Service** (Port 22)
+   - **Status**: ✅ Running
+   - **Authentication**: Key-based only (configuration pending)
+   - **Firewall Status**: Publicly accessible (required)
+   - **Hardening Status**: 
+     - PermitRootLogin: `prohibit-password` (needs: `no`)
+     - PasswordAuthentication: enabled (should be: `no`)
+     - MaxAuthTries: default 6 (recommended: `3`)
+   - **Recommendation**: Implement SSH hardening immediately
+
+3. **Python Web Service - Security SaaS** (Port 3002)
+   - **Process**: `/usr/bin/python3 /tmp/security-saas/robust-server.py`
+   - **Owner**: `root`
+   - **Authentication**: ⚠️ No authentication detected
+   - **Firewall Status**: Publicly accessible - **SECURITY RISK**
+   - **Purpose**: Unknown application (likely development/sandbox)
+   - **Immediate Action**: 
+     - Investigate and document service purpose
+     - Implement authentication or restrict to localhost
+     - Review source code for security issues
+
+4. **DeepInfra Proxy Service** (Port 8880)
+   - **Process**: `/usr/bin/python3 /root/deepinfra/proxy.py`
+   - **Owner**: `root`
+   - **Authentication**: ⚠️ No authentication detected
+   - **Firewall Status**: Publicly accessible - **SECURITY RISK**
+   - **Purpose**: AI API proxy for DeepInfra
+   - **Immediate Action**:
+     - Implement API key authentication
+     - Restrict to localhost connections only
+     - Add request rate limiting
+
+#### **2.2 Service Restriction Implementation**
 ```bash
-# Restrict Nuxt.js development server (port 3002) to localhost
-iptables -A INPUT -p tcp --dport 3002 -s 127.0.0.1 -j ACCEPT
-iptables -A INPUT -p tcp --dport 3002 -j DROP
+# Step 1: Install UFW Firewall (if not installed)
+apt update && apt install ufw -y
 
-# Restrict DeepInfra proxy (port 8880) to localhost
-iptables -A INPUT -p tcp --dport 8880 -s 127.0.0.1 -j ACCEPT
-iptables -A INPUT -p tcp --dport 8880 -j DROP
+# Step 2: Configure baseline firewall rules
+ufw default deny incoming
+ufw default allow outgoing
 
-# Save iptables rules
-iptables-save > /etc/iptables/rules.v4
-apt install iptables-persistent -y
+# Step 3: Allow essential services only
+ufw allow 22/tcp comment 'SSH Access'
+ufw allow 3000/tcp comment 'Gitea Git Service'
+
+# Step 4: Block other services (temporary until authenticated)
+ufw deny 3002/tcp comment 'Security SaaS Service - Authentication Required'
+ufw deny 8880/tcp comment 'DeepInfra Proxy - Authentication Required'
+
+# Alternative: Bind to localhost only if service must be accessible locally
+# sudo -u root bash -c "sed -i 's/0.0.0.0/127.0.0.1/g' /tmp/security-saas/robust-server.py"       # For port 3002
+# sudo -u root bash -c "sed -i 's/0.0.0.0/127.0.0.1/g' /root/deepinfra/proxy.py"                    # For port 8880
+
+# Step 5: Enable firewall
+ufw --force enable
+ufw status verbose
 ```
 
-#### **2.2 Service Authentication Enhancement**
+#### **2.3 Service Authentication Enhancement**
 ```bash
-# For Gitea (port 3000): Ensure authentication is required
-# Check /opt/gitea/app.ini for authentication settings:
+# For Gitea (port 3000): Verify authentication settings
 grep -i "REQUIRE_SIGNIN_VIEW\|ENABLE_BASIC_AUTHENTICATION" /opt/gitea/app.ini
+# Expected: REQUIRE_SIGNIN_VIEW = true
 
-# For any new services, implement at minimum:
-# - Authentication requirement
-# - SSL/TLS encryption
-# - Rate limiting
-# - Access logging
+# For Python services (3002/8880): Add authentication
+# Create authentication middleware for Python services:
+cat > /root/deepinfra/auth_middleware.py << 'EOF'
+import functools
+import os
+from flask import request, jsonify
+
+def require_api_key(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        api_key = request.headers.get('X-API-Key')
+        if api_key != os.environ.get('API_KEY'):
+            return jsonify({'error': 'Unauthorized'}), 401
+        return f(*args, **kwargs)
+    return decorated
+EOF
+
+# Set API key for proxy service
+export API_KEY=$(openssl rand -base64 32)
+echo "API_KEY=$API_KEY" >> /root/deepinfra/.env
+
+# Stop and restart services with authentication
+pkill -f "robust-server.py"
+pkill -f "proxy.py"
+
+# Start with authentication (example)
+# cd /tmp/security-saas && python3 robust-server.py --require-auth &
+# cd /root/deepinfra && python3 proxy.py --api-key "$API_KEY" &
 ```
+
+#### **2.4 Service Documentation Requirements**
+For each service discovered, document:
+1. **Service Purpose**: What does it do?
+2. **Owner**: Who created/maintains it?
+3. **Dependencies**: What libraries/frameworks?
+4. **Data Storage**: Where does it store data?
+5. **Authentication**: How is access controlled?
+6. **Logging**: Where are logs stored?
+7. **Backup**: How is data backed up?
+
+**Service Discovery Command**: `lsof -i -P -n | grep LISTEN | grep -v 127.0.0.1`
 
 ### **Phase 3: Advanced Security Measures**
 
@@ -345,10 +433,10 @@ chmod +x /root/company-structure/scripts/system-health-monitor.sh
 
 | Security Control | Status | Last Verified | Notes | Implementation |
 |-----------------|--------|---------------|-------|----------------|
-| **Firewall (UFW)** | ✅ Implemented | Feb 15, 2026 | Basic rules applied, ports secured | `apt install ufw; ufw default deny incoming; ufw default allow outgoing; ufw allow 22/tcp; ufw allow 3000/tcp; ufw deny 3002; ufw deny 8880; ufw --force enable` |
-| **SSH Hardening** | ✅ Implemented | Feb 15, 2026 | Key auth only, rate limiting via Fail2Ban | `/etc/ssh/sshd_config: PermitRootLogin no, PasswordAuthentication no, MaxAuthTries 3` |
-| **Fail2Ban** | ✅ Installed | Feb 15, 2026 | SSH brute force protection enabled | `apt install fail2ban; systemctl enable fail2ban; systemctl start fail2ban` |
-| **Service Authentication** | ✅ Implemented | Feb 15, 2026 | Ports 3002/8880 restricted via firewall | Ports blocked via UFW until auth implemented |
+| **Firewall (UFW)** | ⚠️ Not Implemented | Feb 15, 2026 | **CRITICAL**: Firewall not installed or configured | `apt update && apt install ufw -y; ufw default deny incoming; ufw default allow outgoing; ufw allow 22/tcp; ufw allow 3000/tcp; ufw deny 3002/tcp; ufw deny 8880/tcp; ufw --force enable` |
+| **SSH Hardening** | 🔄 Partially Implemented | Feb 15, 2026 | PermitRootLogin: `prohibit-password` (needs: `no`), PasswordAuthentication enabled (should be: `no`) | Update `/etc/ssh/sshd_config` with `PermitRootLogin no`, `PasswordAuthentication no`, `MaxAuthTries 3` |
+| **Fail2Ban** | ⚠️ Not Implemented | Feb 15, 2026 | SSH brute force protection not installed | `apt install fail2ban -y; systemctl enable fail2ban; systemctl start fail2ban` |
+| **Service Authentication** | ⚠️ Not Implemented | Feb 15, 2026 | Ports 3002/8880 publicly accessible without auth | `Service hardening required: implement auth or restrict to localhost` |
 | **Enhanced Logging** | ✅ Partially Implemented | Feb 15, 2026 | Basic rsyslog configured | `apt install rsyslog; systemctl enable rsyslog; systemctl start rsyslog` |
 | **File Integrity Monitoring** | ⚠️ Pending | Feb 15, 2026 | AIDE installed, initialization pending | `apt install aide; aideinit; cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db` |
 | **Backup Strategy** | ✅ Implemented | Feb 15, 2026 | Daily/Monthly automation scripts ready | Cron: `0 2 * * *` (daily), `0 3 1 * *` (monthly) |

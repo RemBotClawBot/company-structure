@@ -44,10 +44,21 @@ echo " - Gitea health check"
 curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/v1/version
 echo " - Gitea API version"
 
-# Development services
-echo "=== Development Services ==="
-curl -s -o /dev/null -w "%{http_code}" http://localhost:3002/ || echo "3002: Nuxt app not responding"
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8880/ || echo "8880: DeepInfra proxy not responding"
+# Discovered Python Services (Ports 3002 & 8880)
+echo "=== Python Service Status ==="
+echo "Port 3002: Security SaaS Service"
+ps aux | grep "robust-server.py" | grep -v grep && curl -s -o /dev/null -w "%{http_code}" http://localhost:3002/ && echo " - Running: $(curl -s http://localhost:3002/ | head -c 100)" || echo " - Not responding or authentication required"
+echo "Port 8880: DeepInfra Proxy"
+ps aux | grep "proxy.py" | grep -v grep && curl -s -o /dev/null -w "%{http_code}" http://localhost:8880/ && echo " - Running: $(curl -s http://localhost:8880/ | head -c 100)" || echo " - Not responding or authentication required"
+
+# Security Warning Check
+echo "=== Security Warning ==="
+if ss -tlnp | grep -E ':(3002|8880)' | grep -v "127.0.0.1" > /dev/null; then
+    echo "⚠️ WARNING: Ports 3002 and/or 8880 publicly accessible without authentication!"
+    echo "   Immediate action required: implement firewall or service authentication"
+    EXPOSED_COUNT=$(ss -tlnp | grep -E ':(3002|8880)' | grep -v "127.0.0.1" | wc -l)
+    echo "   Exposed services count: $EXPOSED_COUNT"
+fi
 
 # OpenClaw status
 echo "=== OpenClaw Status ==="
@@ -59,18 +70,36 @@ pgrep -f openclaw-gateway && echo "OpenClaw gateway: Running" || echo "OpenClaw 
 ```bash
 # Firewall status
 echo "=== Firewall Status ==="
-ufw status verbose 2>/dev/null || echo "UFW: Not installed"
+if command -v ufw &> /dev/null; then
+    ufw status verbose
+    echo "Firewall: Installed and running"
+else
+    echo "⚠️ CRITICAL: UFW firewall NOT INSTALLED"
+    echo "   Installation command: apt update && apt install ufw -y"
+    echo "   Configuration command: ufw default deny incoming; ufw default allow outgoing"
+fi
 
 # Fail2Ban status
 echo "=== Fail2Ban Status ==="
-fail2ban-client status sshd 2>/dev/null || echo "Fail2Ban: Not installed"
+if systemctl is-active --quiet fail2ban; then
+    fail2ban-client status sshd 2>/dev/null || echo "Fail2Ban: Installed but sshd jail not configured"
+else
+    echo "⚠️ WARNING: Fail2Ban NOT INSTALLED or NOT RUNNING"
+    echo "   Installation command: apt install fail2ban -y"
+    echo "   Enable command: systemctl enable fail2ban && systemctl start fail2ban"
+fi
 
 # Exposed services check
-echo "=== Exposed Services ==="
+echo "=== Exposed Services Security Assessment ==="
+echo "Port 22 (SSH): $(ss -tlnp | grep ':22' | grep -v '127.0.0.1' > /dev/null && echo '⚠️ Publicly exposed' || echo 'OK')"
+echo "Port 3000 (Gitea): $(ss -tlnp | grep ':3000' | grep -v '127.0.0.1' > /dev/null && echo '⚠️ Publicly exposed' || echo 'OK')"
+echo "Port 3002 (Python Security SaaS): $(ss -tlnp | grep ':3002' | grep -v '127.0.0.1' > /dev/null && echo '❌ CRITICAL - PUBLIC WITHOUT AUTH' || echo 'OK')"
+echo "Port 8880 (DeepInfra Proxy): $(ss -tlnp | grep ':8880' | grep -v '127.0.0.1' > /dev/null && echo '❌ CRITICAL - PUBLIC WITHOUT AUTH' || echo 'OK')"
+
 EXPOSED_COUNT=$(ss -tlnp | grep -E ':(22|3000|3001|3002|8880)' | grep -v '127.0.0.1' | wc -l)
-echo "Publicly exposed services: $EXPOSED_COUNT"
+echo "Total publicly exposed services (excluding localhost): $EXPOSED_COUNT"
 if [ "$EXPOSED_COUNT" -gt 2 ]; then
-    echo "WARNING: Too many services exposed publicly"
+    echo "⚠️ WARNING: $EXPOSED_COUNT services exposed publicly - reduce attack surface"
 fi
 
 # Authentication failures

@@ -157,16 +157,22 @@ Consult TECHNICAL.md for command references, backup locations, and troubleshooti
 | Risk | Impact | Priority | Mitigation Status |
 |------|--------|----------|------------------|
 | **1. No Firewall Protection** | High: All ports publicly exposed | Critical | **PENDING** |
-| **2. SSH Brute Force Vulnerable** | High: No rate limiting or IP blocking | Critical | **PENDING** |
-| **3. Unauthenticated Services** | Medium: Ports 3002 & 8880 public | High | **PENDING** |
-| **4. Inadequate Logging** | Medium: No centralized log aggregation | High | **PENDING** |
+| **2. SSH Hardening Incomplete** | High: Password auth potentially enabled | Critical | **PENDING** |
+| **3. Unauthenticated Services** | High: Ports 3002 & 8880 public without auth | Critical | **PENDING** |
+| **4. No Intrusion Detection** | High: SSH brute force unprotected | Critical | **PENDING** |
 | **5. Identity Verification Gaps** | High: Recent security incident | Critical | **PARTIAL** |
-| **6. No File Integrity Monitoring** | Medium: Tamper detection missing | Medium | **PENDING** |
+| **6. Inadequate Service Monitoring** | Medium: Python services undocumented | High | **INVESTIGATION REQUIRED** |
+
+#### **Discovered Services Requiring Investigation:**
+- **Port 3002**: Python Security SaaS Service (`/tmp/security-saas/robust-server.py`)
+- **Port 8880**: DeepInfra Proxy Service (`/root/deepinfra/proxy.py`)
+- **Security Status**: Both publicly accessible without authentication
+- **Immediate Action**: Restrict to localhost or implement authentication
 
 #### **✅ SECURITY CONTROLS IMPLEMENTED**
 | Control | Status | Last Verified |
 |---------|--------|--------------|
-| **SSH Key Authentication Only** | ✅ Active | Feb 15, 2026 |
+| **SSH Key Authentication Only** | ✅ Partial | Feb 15, 2026 |
 | **Daily Incremental Backups** | ✅ Operational | Feb 15, 2026 |
 | **Monthly Full Backups** | ✅ Operational | Feb 15, 2026 |
 | **System Health Monitoring** | ✅ Running (30-min cron) | Feb 15, 2026 |
@@ -174,6 +180,7 @@ Consult TECHNICAL.md for command references, backup locations, and troubleshooti
 | **Comprehensive Security Documentation** | ✅ Available | Feb 15, 2026 |
 | **Security Automation Scripts** | ✅ Ready for deployment | Feb 15, 2026 |
 | **Incident Response Playbook** | ✅ Documented | Feb 15, 2026 |
+| **Service Discovery Documentation** | ✅ Updated | Feb 15, 2026 |
 
 ### Remediation Roadmap
 
