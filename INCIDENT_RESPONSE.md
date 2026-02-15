@@ -638,6 +638,92 @@ swapoff -a && swapon /swapfile  # After creating swapfile per TECHNICAL.md plan
 - Optimize CI builds to run off-peak
 - Track average load in MEMORY.md to detect trends
 
+### Scenario 7: Identity Verification Crisis (Authority Conflict)
+
+#### Detection Indicators
+- Multiple individuals claiming same identity/role
+- Contradictory directives from purported authority figures
+- Verification failure through established channels
+- Evidence of impersonation attempts
+
+#### Response Protocol
+```bash
+# 1. IMMEDIATE FREEZE
+# Freeze all accounts related to conflicting identities
+# Suspend all privileged operations requiring verification
+# Preserve chat logs, directives, and evidence
+
+# 2. EVIDENCE COLLECTION
+# Archive Discord/communication logs
+# Capture screenshot evidence of conflicting claims
+# Document timestamps and exact statements
+mkdir -p /tmp/identity_crisis_$(date +%Y%m%d_%H%M%S)
+
+# 3. VERIFICATION ESCALATION
+# Contact ONLY previously verified authority (CTO Veld)
+# Use established secure channels (Discord DM with verification history)
+# Require multi-factor confirmation: 
+#   - Previous decision references
+#   - Knowledge of specific shared history
+#   - Secure token exchange if available
+
+# 4. CONTAINMENT ACTIONS
+if [ "$CONFLICT_RESOLUTION" = "Veld_confirmed" ]; then
+    # Follow Veld directives explicitly
+    # Document resolution in MEMORY.md
+    # Update SECURITY.md authority chain
+    # Implement any account revocations
+elif [ "$CONFLICT_RESOLUTION" = "Gerard_confirmed" ]; then
+    # Requires extraordinary evidence
+    # Cross-reference with previous verification records
+    # Contact Veld for secondary confirmation
+    # If confirmed, update authority documentation
+else
+    # Maintain freeze until resolution
+    # Escalate to external arbitration if needed
+    # Preserve all evidence for investigation
+fi
+```
+
+#### Investigation Steps
+1. **Historical Analysis**
+   - Review MEMORY.md for previous verification events
+   - Check git commit history for authority patterns
+   - Analyze communication channel security
+
+2. **Technical Forensics**
+   - Check IP addresses and connection patterns
+   - Verify cryptographic signatures if available
+   - Analyze timing of conflicting directives
+
+3. **Behavioral Analysis**
+   - Compare communication styles
+   - Verify knowledge of internal systems
+   - Cross-reference with known operational patterns
+
+#### Resolution Protocol
+1. **Authority Confirmation**
+   - Single source of truth established
+   - All team members notified of resolution
+   - Documentation updated immediately
+
+2. **Account Management**
+   - Revoke unauthorized accounts
+   - Rotate all credentials and secrets
+   - Implement enhanced verification for future
+
+3. **Process Improvement**
+   - Update identity verification procedures
+   - Implement multi-person confirmation for critical changes
+   - Establish escalation hierarchy with fallback contacts
+
+#### Prevention Measures
+- **Multi-person verification**: Require 2+ trusted authorities for sensitive operations
+- **Emergency contact protocol**: Designated fallback contacts outside usual chain
+- **Immutable audit trail**: All authority changes logged in git with cryptographic signatures
+- **Regular verification drills**: Quarterly identity confirmation exercises
+- **Secure communication channels**: Encrypted, logged channels for sensitive directives
+
 ---
 
 *This playbook is a living document. Update after every incident and during quarterly reviews. All team members must be familiar with their roles and responsibilities.*

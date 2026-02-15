@@ -30,9 +30,84 @@
 
 > Use `ss -tlnp | grep -E "(22|3000|3001)"` to verify port bindings after changes.
 
-### 2.2 Firewall / Access
-- `ufw` / `iptables` CLI tools not fully configured; firewall status currently **unknown**.
-- Immediate action item: document and implement firewall policy (see SECURITY.md).
+### 2.2 Firewall Configuration (Recommended)
+Current status: **Not configured** - UFW (Uncomplicated Firewall) recommended for simplicity.
+
+#### Recommended UFW Ruleset:
+```bash
+# Install UFW if not present
+apt install ufw -y
+
+# Set default policies
+ufw default deny incoming
+ufw default allow outgoing
+
+# Allow SSH (limit to trusted IPs if possible)
+ufw allow 22/tcp
+# ufw allow from 192.168.1.0/24 to any port 22  # More restrictive example
+
+# Allow Gitea web interface
+ufw allow 3000/tcp
+
+# Allow Forgejo (when active)
+# ufw allow 3001/tcp
+
+# Enable SSH rate limiting
+ufw limit ssh
+
+# Enable logging
+ufw logging on
+
+# Enable firewall
+ufw --force enable
+
+# Verify configuration
+ufw status verbose
+```
+
+#### Alternative iptables Ruleset (if UFW not available):
+```bash
+# Flush existing rules
+iptables -F
+iptables -X
+
+# Default policies
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+# Allow established connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow loopback
+iptables -A INPUT -i lo -j ACCEPT
+
+# Allow SSH
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+# Allow Gitea
+iptables -A INPUT -p tcp --dport 3000 -j ACCEPT
+
+# ICMP (ping)
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+# Save rules (persist across reboots)
+apt install iptables-persistent -y
+iptables-save > /etc/iptables/rules.v4
+```
+
+#### Firewall Status Check Commands:
+```bash
+# Check listening ports
+ss -tlnp
+
+# Check firewall status
+ufw status  # if using UFW
+iptables -L -n -v  # if using raw iptables
+
+# Check active connections
+netstat -tunap
+```
 
 ## 3. Service Architecture
 

@@ -146,22 +146,102 @@ BACKUP_DIR="/opt/gitea/data.backup/monthly"
 DATE=$(date +%Y%m)
 mkdir -p "$BACKUP_DIR/$DATE"
 
+# Log start time
+echo "Monthly backup started at $(date)" | tee "$BACKUP_DIR/$DATE/backup.log"
+
 # Stop services temporarily
+echo "Stopping Gitea service..."
 systemctl stop gitea
 
 # Full filesystem backup
+echo "Creating full backup archive..."
 tar -czf "$BACKUP_DIR/$DATE/full-backup.tar.gz" \
   /opt/gitea \
   /root/.openclaw \
   ~/.ssh \
-  /etc/ssh
+  /etc/ssh \
+  2>&1 | tee -a "$BACKUP_DIR/$DATE/backup.log"
+
+# Generate checksums for verification
+echo "Generating checksums..."
+find /opt/gitea -type f -exec md5sum {} \; > "$BACKUP_DIR/$DATE/checksums.md5" 2>/dev/null
 
 # Restart services
+echo "Restarting Gitea service..."
 systemctl start gitea
 
 # Verify backup integrity
+echo "Verifying backup integrity..."
 tar -tzf "$BACKUP_DIR/$DATE/full-backup.tar.gz" > /dev/null
-echo "Backup verification: $?"
+if [ $? -eq 0 ]; then
+    echo "Backup verification: SUCCESS" | tee -a "$BACKUP_DIR/$DATE/backup.log"
+    echo "Backup size: $(du -h "$BACKUP_DIR/$DATE/full-backup.tar.gz" | cut -f1)" | tee -a "$BACKUP_DIR/$DATE/backup.log"
+else
+    echo "Backup verification: FAILED" | tee -a "$BACKUP_DIR/$DATE/backup.log"
+    exit 1
+fi
+
+# Retention policy: Keep 12 monthly backups
+echo "Applying retention policy..."
+find "$BACKUP_DIR" -name "full-backup.tar.gz" -type f -mtime +365 -delete
+find "$BACKUP_DIR" -type d -empty -delete
+
+echo "Monthly backup completed at $(date)" | tee -a "$BACKUP_DIR/$DATE/backup.log"
+```
+
+#### Automated Monitoring Script
+```bash
+#!/bin/bash
+# /opt/scripts/system-health-monitor.sh
+LOG_FILE="/var/log/system-health.log"
+THRESHOLD_CPU=90
+THRESHOLD_MEMORY=90
+THRESHOLD_DISK=85
+
+echo "=== System Health Check $(date) ===" | tee -a "$LOG_FILE"
+
+# CPU Usage
+CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}' | cut -d'.' -f1)
+echo "CPU Usage: ${CPU_USAGE}%" | tee -a "$LOG_FILE"
+if [ "$CPU_USAGE" -gt "$THRESHOLD_CPU" ]; then
+    echo "WARNING: High CPU usage detected!" | tee -a "$LOG_FILE"
+fi
+
+# Memory Usage
+MEMORY_USAGE=$(free | grep Mem | awk '{print $3/$2 * 100.0}' | cut -d'.' -f1)
+echo "Memory Usage: ${MEMORY_USAGE}%" | tee -a "$LOG_FILE"
+if [ "$MEMORY_USAGE" -gt "$THRESHOLD_MEMORY" ]; then
+    echo "WARNING: High memory usage detected!" | tee -a "$LOG_FILE"
+fi
+
+# Disk Usage
+DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
+echo "Disk Usage: ${DISK_USAGE}%" | tee -a "$LOG_FILE"
+if [ "$DISK_USAGE" -gt "$THRESHOLD_DISK" ]; then
+    echo "WARNING: High disk usage detected!" | tee -a "$LOG_FILE"
+fi
+
+# Service Status
+SERVICES=("gitea" "fail2ban" "ufw")
+for SERVICE in "${SERVICES[@]}"; do
+    if systemctl is-active --quiet "$SERVICE"; then
+        echo "Service $SERVICE: ACTIVE" | tee -a "$LOG_FILE"
+    else
+        echo "ALERT: Service $SERVICE: INACTIVE" | tee -a "$LOG_FILE"
+    fi
+done
+
+# Port Availability
+PORTS=("22" "3000")
+for PORT in "${PORTS[@]}"; do
+    if ss -tln | grep -q ":$PORT "; then
+        echo "Port $PORT: LISTENING" | tee -a "$LOG_FILE"
+    else
+        echo "ALERT: Port $PORT: NOT LISTENING" | tee -a "$LOG_FILE"
+    fi
+done
+
+echo "=== Check Complete ===" | tee -a "$LOG_FILE"
 ```
 
 ### Service Management

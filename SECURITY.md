@@ -30,13 +30,76 @@
 
 ## 3. Access Controls
 
-### 3.1 SSH Access
+### 3.1 SSH Access & Hardening
+
+#### Current SSH Configuration:
 - Authentication: Key-based only (`~/.ssh/authorized_keys`)
-- Rotation: Quarterly or post-incident; remove Gerard keys immediately
-- Hardening Tasks:
-  - Enforce `PermitRootLogin prohibit-password`
-  - Set `PasswordAuthentication no`
-  - Deploy Fail2Ban for brute-force protection
+- Root access: Enabled via SSH keys only
+- Password authentication: Disabled
+
+#### SSH Hardening Checklist:
+```bash
+# 1. Verify current SSH configuration
+grep -E "^(PermitRootLogin|PasswordAuthentication|PubkeyAuthentication)" /etc/ssh/sshd_config
+
+# 2. Recommended secure configuration (/etc/ssh/sshd_config)
+# PermitRootLogin prohibit-password
+# PasswordAuthentication no
+# PubkeyAuthentication yes
+# PermitEmptyPasswords no
+# ChallengeResponseAuthentication no
+# UsePAM yes
+# AllowUsers root  # Restrict to specific users if needed
+# MaxAuthTries 3
+# LoginGraceTime 60
+# ClientAliveInterval 300
+# ClientAliveCountMax 2
+
+# 3. Remove revoked SSH keys (Gerard access)
+# Review ~/.ssh/authorized_keys
+# Remove any unauthorized public keys
+
+# 4. Deploy Fail2Ban for SSH protection
+apt install fail2ban -y
+cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+# Configure Fail2Ban for SSH (add to /etc/fail2ban/jail.local)
+# [sshd]
+# enabled = true
+# port    = ssh
+# filter  = sshd
+# logpath = /var/log/auth.log
+# maxretry = 3
+# bantime = 3600
+
+systemctl enable fail2ban
+systemctl start fail2ban
+systemctl status fail2ban
+```
+
+#### SSH Key Rotation Schedule:
+- **Quarterly**: Rotate all SSH keys
+- **Post-incident**: Immediate rotation if compromise suspected
+- **Personnel changes**: Rotate keys when team members leave
+
+#### Monitoring SSH Access:
+```bash
+# Daily SSH log review
+tail -100 /var/log/auth.log | grep sshd
+
+# Failed attempts monitoring
+grep "Failed password\|authentication failure" /var/log/auth.log
+
+# Successful logins tracking
+last | head -20
+```
+
+#### Emergency SSH Key Rotation Procedure:
+1. Generate new key pair on management workstation
+2. Append new public key to `~/.ssh/authorized_keys` on server
+3. Test new key connection
+4. Remove old public key from `authorized_keys`
+5. Monitor for failed connection attempts from old key
 
 ### 3.2 Git Services
 - **Gitea (port 3000)**: Admin accounts `openclaw_admin`, `Rem` (active), `Gerard` (disabled)
