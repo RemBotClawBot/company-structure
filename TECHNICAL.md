@@ -1,219 +1,204 @@
 # Technical Infrastructure Documentation
 
-## Server Specification
+## 1. Server Specification
 
-### Hardware/Cloud Details
-- **IP Address**: `46.224.129.229`
-- **Operating System**: Linux 6.8.0-100-generic (x64)
-- **Node.js Version**: v22.22.0
-- **Git Version**: 2.43.0
-- **Shell**: bash
-- **User**: root
+### 1.1 Hardware / Cloud Profile
+- **Hostname**: `openclaw-x64`
+- **Public IP**: `46.224.129.229`
+- **Provider**: Unspecified (bare/VM)
+- **CPU**: AMD EPYC-Genoa (2 vCPU, 1 thread per core, 1 socket)
+- **Memory**: 3.7 GiB total (≈2.4 GiB used under normal load)
+- **Storage**: 75 GB SSD (`/dev/sda1`, ~14 % utilized)
+- **Swap**: Not configured (0 B). Consider adding swap for burst tolerance.
 
-### Network Configuration
-- **SSH Port**: 22 (enabled)
-- **Gitea Port**: 3000 (listening on all interfaces)
-- **Firewall Status**: Unknown (ufw/iptables commands not found)
-- **External Access**: Confirmed via curl tests
-
-## Service Architecture
-
-### Gitea Instance (Port 3000)
-```
-Service: Gitea 1.23.3
-Process: PID 1632, user git
-Configuration: /opt/gitea/app.ini
-Database: /opt/gitea/data/forgejo.db (potential schema issue)
-Access: http://46.224.129.229:3000/
-Accounts: openclaw_admin, Rem, Gerard
-```
-
-### Forgejo Instance (Port 3001)
-```
-Status: Fresh installation with clean database
-Purpose: Migration target from Gitea
-Issue: Gitea database schema incompatible with Forgejo 7.0.1
-Current: Not actively running (port not listening)
-```
-
-### OpenClaw Configuration
-```
-Workspace: /root/.openclaw/workspace
-Model: deepinfra/deepseek-ai/DeepSeek-V3.2
-Skills Directory: /usr/lib/node_modules/openclaw/skills/
-Memory Files: MEMORY.md + memory/YYYY-MM-DD.md
-```
-
-## CI/CD Pipeline
-
-### Current Implementation
-- **Gitea Actions**: Stuck on "Waiting" (no runner installed)
-- **Actions API**: Returns 404 (possible misconfiguration)
-- **Workaround**: Manual CI via post-receive hook
-- **Script**: `/opt/gitea/ci-runner.sh`
-
-### Manual Runner Script
-```bash
-#!/bin/bash
-# /opt/gitea/ci-runner.sh
-# Executes on repository push events
-# TODO: Install global TypeScript/Nuxt dependencies
-```
-
-### Pending Dependencies
-1. Global TypeScript installation
-2. Global Nuxt CLI tools
-3. Node package manager configuration
-4. Build environment setup
-
-## Repository Structure
-
-### Public GitHub Organization
-```
-RemBotClawBot/
-├── RemBotClawBot.git        # AI identity documentation
-├── company-structure.git    # Organizational documentation
-└── [future repositories]
-```
-
-### Internal Gitea Projects
-```
-experience-portal/
-├── Nuxt + TypeScript project
-├── OpenClaw interface (in development)
-└── Discord DM integration (pending)
-```
-
-## Development Environment
-
-### Tools Installed
+### 1.2 Operating System & Toolchain
+- **OS**: Ubuntu 24.04.4 LTS (Noble Numbat)
+- **Kernel**: Linux 6.8.0-100-generic #100-Ubuntu (PREEMPT_DYNAMIC)
+- **Shell**: `/bin/bash`
 - **Node.js**: v22.22.0
 - **Git**: 2.43.0
-- **curl**: Available for network tests
-- **bash**: Default shell
+- **Default Workspace**: `/root/.openclaw/workspace`
 
-### Missing Dependencies
-- **ufw/iptables**: Firewall management tools not found
-- **Global npm packages**: TypeScript, Nuxt CLI needed for CI
-- **Process monitoring**: Systemd/PM2 for service management
+## 2. Network Configuration
 
-## Backup Strategy
+### 2.1 Listening Ports
+| Port | Protocol | Service | Notes |
+|------|----------|---------|-------|
+| 22   | TCP      | SSH (sshd PID 1215) | Key-based root access only |
+| 3000 | TCP      | Gitea 1.23.3 (`/usr/local/bin/gitea web`) | Primary git frontend |
+| 3001 | TCP      | Forgejo (inactive) | Reserved for future migration |
 
-### Gitea Data
-```
-Primary: /opt/gitea/data/
-Backup: /opt/gitea/data.backup/
-Schedule: Manual before major changes
-```
+> Use `ss -tlnp | grep -E "(22|3000|3001)"` to verify port bindings after changes.
 
-### Configuration Files
-```
-Gitea Config: /opt/gitea/app.ini
-OpenClaw Config: /root/.openclaw/config.yaml
-SSH Keys: ~/.ssh/
-Workspace: /root/.openclaw/workspace/
-```
+### 2.2 Firewall / Access
+- `ufw` / `iptables` CLI tools not fully configured; firewall status currently **unknown**.
+- Immediate action item: document and implement firewall policy (see SECURITY.md).
 
-### Documentation
+## 3. Service Architecture
+
+### 3.1 Gitea (Primary Git Hosting)
 ```
-MEMORY.md: Curated long-term memory
-memory/YYYY-MM-DD.md: Daily raw logs
-HEARTBEAT.md: Proactive checklists
-TOOLS.md: Local tool configuration
+Binary: /usr/local/bin/gitea
+Service: gitea.service (systemd)
+Config: /opt/gitea/app.ini
+Data Dir: /opt/gitea/data/
+Database: /opt/gitea/data/forgejo.db (SQLite)
+Process: PID 1632, user `git`
+URL: http://46.224.129.229:3000/
+Admin Accounts: openclaw_admin, Rem, Gerard
 ```
 
-## Monitoring & Health Checks
+### 3.2 Forgejo (Staging / Migration Target)
+```
+Purpose: Clean Forgejo instance on port 3001
+Status: Installed, migration blocked by schema mismatch (Gitea → Forgejo 7.0.1)
+Action: Await upgraded migration tooling or manual data transform
+```
 
-### Current Monitoring
-- **Heartbeat**: 2-4 times daily system checks
-- **Service Health**: Port 3000 accessibility tests
-- **Security**: Regular audits via healthcheck skill
-- **Memory**: Periodic maintenance of MEMORY.md
+### 3.3 OpenClaw Runtime
+```
+Workspace: /root/.openclaw/workspace
+Skills: /usr/lib/node_modules/openclaw/skills/
+Memory: MEMORY.md + memory/YYYY-MM-DD.md + HEARTBEAT.md
+Model Alias: deepinfra/deepseek-ai/DeepSeek-V3.2
+```
 
-### Automated Tasks
-1. **Hourly**: GitHub repository improvements
-2. **Daily**: System health and security checks
-3. **Weekly**: Infrastructure review and updates
-4. **Monthly**: Comprehensive security audit
+## 4. CI/CD Pipeline Status
 
-### Alert Channels
-- **Discord**: Primary notification platform
-- **GitHub**: Repository activity notifications
-- **Internal Logs**: System and application monitoring
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Gitea Actions UI | "Waiting" | Runner not installed |
+| Actions API | 404 responses | Indicates misconfigured or disabled API |
+| Manual Runner | `/opt/gitea/ci-runner.sh` | Triggered via post-receive hook |
+| Dependencies | TypeScript, Nuxt CLI (global) | Pending installation |
 
-## Upgrade Procedures
+> Short term: maintain manual script workflow. Long term: provision Forgejo runner or migrate to external CI.
 
-### Gitea → Forgejo Migration
-**Attempted**: February 14, 2026
-**Status**: Incomplete due to schema incompatibility
-**Backup**: `/opt/gitea/data.backup` maintained
-**Current**: Running Gitea 1.23.3 on port 3000
+## 5. Repository Landscape
 
-### Assistant Upgrades
-**Current Model**: DeepSeek-V3.2
-**Skills**: Multiple specialized skills available
-**Memory**: Persistent via file-based system
-**Scheduling**: Cron jobs for automated tasks
+### 5.1 Internal (Gitea)
+- `experience-portal` – Nuxt + TypeScript app (needs OpenClaw interface + Discord DM fixes)
+- `company-structure` – This documentation repository
 
-## Network Services
+### 5.2 External (GitHub)
+- `RemBotClawBot/RemBotClawBot` – Public identity & automation showcase
+- `RemBotClawBot/company-structure` – Public mirror (if desired) once sanitized
 
-### Active Ports
-- **22/tcp**: SSH (root access with key authentication)
-- **3000/tcp**: Gitea web interface
-- **Others**: To be documented as discovered
+### 5.3 Account & Credential Notes
+- Admin transfer protocol: always transfer repositories to `Rem` before disabling legacy accounts
+- Password hygiene: strong passphrases stored outside repo; never commit secrets
 
-### External Connectivity
-- **Confirmed**: HTTP/HTTPS outbound (curl tests)
-- **Git Operations**: SSH to GitHub successful
-- **DNS Resolution**: Working (ipinfo.io queries)
-- **API Access**: GitHub API, external services
+## 6. Development Environment
 
-## Security Configuration
+### 6.1 Tools Installed
+- Node.js 22.x + npm
+- Git CLI
+- curl / wget
+- Standard GNU utilities
 
-### Authentication
-- **SSH**: Key-based only (no password)
-- **Gitea**: Password-based with admin accounts
-- **GitHub**: SSH key authentication
-- **OpenClaw**: Session-based with memory persistence
+### 6.2 Missing / Planned Tools
+- TypeScript (global)
+- Nuxt CLI
+- Process supervisors (systemd units exist; consider PM2 for apps)
+- Firewall tooling (ufw/iptables wrappers)
 
-### Access Controls
-- **Root SSH**: Limited to authorized_keys
-- **Service Accounts**: git user for Gitea
-- **Repository Permissions**: Role-based in Gitea
-- **API Access**: Limited external dependencies
+## 7. Backup & Recovery
 
-### Monitoring
-- **Log Review**: Manual inspection of service logs
-- **Connection Tracking**: External access monitoring
-- **Competitor Awareness**: Xavin interference monitoring
-- **Identity Verification**: Multi-step confirmation process
+### 7.1 Current Strategy
+| Target | Location | Frequency | Notes |
+|--------|----------|-----------|-------|
+| Gitea data | `/opt/gitea/data.backup/` | Manual pre-change | Contains `gitea.db` snapshot |
+| Config files | `/opt/gitea/app.ini`, `/root/.openclaw/config.yaml` | Manual copies | Include in future scripted backups |
+| SSH keys | `~/.ssh/` | Manual | Should be part of scheduled secure backup |
 
-## Troubleshooting Guide
+### 7.2 Recommended Scripts (see OPERATIONS.md)
+- `daily-backup.sh` – rsync-based incremental copies + 7-day retention
+- `monthly-backup.sh` – Full tarball backup with service stop/start and verification
 
-### Gitea Not Accessible
-1. Check if port 3000 is listening: `ss -tlnp | grep 3000`
-2. Verify service is running: `ps aux | grep gitea`
-3. Test local access: `curl http://localhost:3000/`
-4. Check firewall/security groups if external access fails
+### 7.3 Restore Procedure (High-Level)
+1. Stop service: `systemctl stop gitea`
+2. Replace data dir from known-good backup
+3. Restore configuration + verify permissions (owner `git:git`)
+4. Start service: `systemctl start gitea`
+5. Validate via `curl http://localhost:3000/`
 
-### CI/CD Pipeline Issues
-1. Manual execution: `/opt/gitea/ci-runner.sh`
-2. Check Actions API: `curl http://localhost:3000/api/v1/actions`
-3. Verify runner installation status
-4. Review post-receive hook configuration
+## 8. Monitoring & Health Checks
 
-### SSH Access Problems
-1. Verify authorized_keys contains correct public key
-2. Check SSH service status
-3. Test connectivity: `ssh root@46.224.129.229`
-4. Review cloud provider security groups
+### 8.1 Heartbeat Tasks (see HEARTBEAT.md / OPERATIONS.md)
+- System health (ports, disk, CPU, memory)
+- Security log review
+- Project progress review (experience-portal, CI pipeline)
+- Memory maintenance (summaries into MEMORY.md)
 
-### Assistant Functionality
-1. Check OpenClaw service status
-2. Verify memory file permissions
-3. Review cron job scheduling
-4. Test tool availability and permissions
+### 8.2 Command Reference
+```bash
+# Process + resource snapshots
+systemctl status gitea
+ps aux | grep gitea
+ss -tlnp | grep 3000
+free -h
+ df -h /
+
+# Log review
+journalctl -u gitea -n 50 --no-pager
+tail -100 /var/log/syslog | grep -i "error\|warn"
+```
+
+## 9. Upgrade & Change Procedures
+
+### 9.1 Gitea → Forgejo Migration Attempt (Feb 14 2026)
+- Result: Schema mismatch prevented migration
+- Mitigation: Maintained Gitea as primary; preserved `/opt/gitea/data.backup`
+- Next Steps: Research compatible Forgejo version or export/import strategy
+
+### 9.2 Assistant Upgrades
+- Model alias `deepinfra/deepseek-ai/DeepSeek-V3.2`
+- Additional skills enabled: healthcheck, weather, etc.
+- Cron-driven documentation improvements every 15 minutes (this task)
+
+### 9.3 Change Management
+- Standard + emergency workflows defined in OPERATIONS.md
+- Approvals: Gerard (business) + Veld (technical)
+- Documentation: log in MEMORY.md + relevant *.md files
+
+## 10. Network Services & Connectivity
+
+### 10.1 External Connectivity Tests
+```bash
+curl -s https://ipinfo.io
+curl -s http://46.224.129.229:3000/
+ssh -T git@github.com  # via RemBotClawBot key
+```
+
+### 10.2 SSH Configuration
+- Root access via authorized_keys only
+- Ensure `PermitRootLogin prohibit-password` and `PasswordAuthentication no` (verify in `/etc/ssh/sshd_config`)
+- Rotate keys after personnel changes per OPERATIONS.md
+
+## 11. Security Configuration Snapshot
+
+- **Identity Controls**: Documented in SECURITY.md (Gerard, Veld, Yukine, Rem) with verification procedures
+- **Competitor Awareness**: Track Xavin interference; escalate anomalies
+- **Logging**: Systemd journal, `/var/log/syslog`, `/var/log/auth.log`
+- **Incident Playbooks**: See INCIDENT_RESPONSE.md for severity matrix and response templates
+
+## 12. Troubleshooting Guide
+
+| Symptom | Diagnostic Commands | Likely Cause | Resolution |
+|---------|---------------------|--------------|------------|
+| Port 3000 unreachable | `ss -tlnp | grep 3000`, `systemctl status gitea`, `curl http://localhost:3000/` | Service down / firewall issue | Restart service, verify firewall, check logs |
+| Actions stuck "Waiting" | `journalctl -u gitea | grep runner`, API checks | Runner missing / misconfigured | Install runner, configure token, restart |
+| Unauthorized access alerts | `tail /var/log/auth.log`, `last`, `who` | Brute force attempt | Block IP, enable fail2ban, rotate keys |
+| Disk pressure | `df -h /`, `du -sh /opt/gitea/data` | Large repo data / logs | Prune repos/logs, expand disk, tighten backups |
+| High memory usage | `free -h`, `ps aux --sort=-%mem | head` | runaway process | Restart offending service, investigate leak |
+
+## 13. Next Technical Actions
+1. Configure firewall (ufw/iptables) with least-privilege rules
+2. Install and configure Forgejo runner or external CI alternative
+3. Automate backups via scripts in OPERATIONS.md
+4. Add swapfile (e.g., 2 GiB) for stability
+5. Implement monitoring/alerting stack (e.g., Netdata, Prometheus, or lightweight scripts)
 
 ---
 
-*This technical documentation should be updated as infrastructure changes occur.*
+*Update this document after any infrastructure change, migration attempt, or significant hardware/network adjustment.*
