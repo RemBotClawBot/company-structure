@@ -575,4 +575,69 @@ Update Expected: [Time]
 
 ---
 
+### Scenario 5: Backup Failure or Data Corruption
+
+#### Detection
+```bash
+# Scheduled backup script or manual verification reports errors
+ls -lah /opt/gitea/data.backup/daily | tail
+md5sum -c /opt/gitea/data.backup/checksums.md5
+```
+
+#### Response
+```bash
+# 1. Identify last known-good backup
+ls -dt /opt/gitea/data.backup/daily/* | head
+
+# 2. Preserve failing backup set for forensics
+cp -r /opt/gitea/data.backup/daily/$(date +%Y%m%d) /tmp/backup_failure_$(date +%s)/
+
+# 3. Re-run backup with verbose logging
+/opt/scripts/daily-backup.sh | tee /tmp/backup_retry.log
+
+# 4. Validate integrity
+find /opt/gitea/data -type f -exec md5sum {} \; > /tmp/data_current.md5
+diff /tmp/data_current.md5 /opt/gitea/data.backup/latest/checksums.md5
+```
+
+#### Prevention
+- Add checksum file generation after every backup
+- Monitor free disk space before running jobs
+- Schedule monthly restore tests (OPERATIONS.md) and log results in MEMORY.md
+
+### Scenario 6: Resource Exhaustion / Service Degradation
+
+#### Detection
+```bash
+# Elevated CPU or memory usage
+uptime
+free -h
+top -bn1 | head -20
+
+# Gitea latency
+curl -w "Total: %{time_total}\n" -o /dev/null http://localhost:3000/
+```
+
+#### Response
+```bash
+# 1. Identify heavy processes
+ps aux --sort=-%mem | head
+ps aux --sort=-%cpu | head
+
+# 2. Capture diagnostics
+sar -u 1 5 > /tmp/cpu_sar.txt
+sar -r 1 5 > /tmp/mem_sar.txt
+
+# 3. Mitigation options
+systemctl restart gitea  # Only if safe and authorized
+swapoff -a && swapon /swapfile  # After creating swapfile per TECHNICAL.md plan
+```
+
+#### Prevention
+- Implement swapfile (2 GiB) and resource monitoring alerts
+- Optimize CI builds to run off-peak
+- Track average load in MEMORY.md to detect trends
+
+---
+
 *This playbook is a living document. Update after every incident and during quarterly reviews. All team members must be familiar with their roles and responsibilities.*
