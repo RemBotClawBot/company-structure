@@ -72,26 +72,26 @@ This directory contains automation scripts for security hardening, backup operat
 0 3 1 * * /root/company-structure/scripts/monthly-backup.sh
 ```
 
-### Security Verification (Daily at 6 AM)
+### Security Verification (Daily at 9 AM)
 ```bash
-0 6 * * * /root/company-structure/scripts/security-verify.sh
+0 9 * * * /root/company-structure/scripts/security-verify.sh >> /var/log/company-structure/security-verify.log 2>&1
 ```
 
-### Backup Verification (Daily at 7 AM)
+### Backup Verification (Weekly, Sunday at 4 AM)
 ```bash
-0 7 * * * /root/company-structure/scripts/backup-verify.sh
+0 4 * * 0 /root/company-structure/scripts/backup-verify.sh >> /var/log/company-structure/backup-verify.log 2>&1
 ```
 
 ## Implementation Status
 
 | Script | Cron Job Set | Last Execution | Status |
 |--------|--------------|----------------|--------|
-| system-health-monitor.sh | ✅ Yes (every 5 min) | Feb 15, 2026 | Operational |
-| finance-daily.sh | ⚠️ Not yet configured | N/A | Ready for deployment |
-| daily-backup.sh | ⚠️ Not yet configured | N/A | Ready for deployment |
-| monthly-backup.sh | ⚠️ Not yet configured | N/A | Ready for deployment |
-| security-verify.sh | ⚠️ Not yet configured | N/A | Ready for deployment |
-| backup-verify.sh | ⚠️ Not yet configured | N/A | Ready for deployment |
+| system-health-monitor.sh | ✅ Yes (every 30 min) | Feb 15, 2026 | Operational |
+| finance-daily.sh | ⚠️ Pending cron (`0 23 * * *`) | Manual runs only | Ready for deployment |
+| daily-backup.sh | ⚠️ Pending cron (`0 2 * * *`) | Manual runs only | Ready for deployment |
+| monthly-backup.sh | ⚠️ Pending cron (`0 3 1 * *`) | Manual runs only | Ready for deployment |
+| security-verify.sh | ⚠️ Pending cron (`0 9 * * *`) | Not yet run | Ready for deployment |
+| backup-verify.sh | ⚠️ Pending cron (`0 4 * * 0`) | Not yet run | Ready for deployment |
 
 ## Security Compliance
 

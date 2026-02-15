@@ -497,6 +497,26 @@ crontab -l | grep health-check
 /root/company-structure/scripts/daily-health-check.sh
 ```
 
+### **7. Voice Channel Announcement Protocol**
+When cron tasks or manual jobs explicitly require a voice announcement (e.g., finance cron instructions, cron task description), follow this standardized process for channel `568131182567620623`:
+
+1. **Prep Notes**
+   - Task name + script (`finance-daily.sh`, `security-verify.sh`, etc.)
+   - Timestamp (UTC)
+   - Success/Failure summary & key metrics (e.g., backups verified, warnings)
+   - Next scheduled run or remediation action
+
+2. **Announcement Script**
+   - "`[UTC time]` — `[script/task]` completed. Status: `[success/warnings/failures]`. Highlights: `[1-2 bullets]`. Next action `[time or dependency]`."
+
+3. **Post-Announcement Logging**
+   - Add short entry to MEMORY.md or INCIDENT_HISTORY.md if the run produced warnings/errors.
+   - Update OPERATIONS.md change log when procedure changes.
+
+4. **Escalation**
+   - If failures occur, remain in voice channel until Veld or Yukine acknowledges.
+   - Open INCIDENT_RESPONSE procedure if Severity ≥ 2.
+
 ### **Maintenance Schedule**
 - **Daily**: Review operational reports, address alerts
 - **Weekly**: Update check scripts, review compliance reports
@@ -505,7 +525,7 @@ crontab -l | grep health-check
 
 ---
 
-**Document Version**: 2.0.0  
+**Document Version**: 2.1.0  
 **Last Updated**: February 15, 2026  
 **Next Review**: February 22, 2026  
 **Operations Lead**: Rem  

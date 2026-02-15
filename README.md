@@ -26,8 +26,10 @@ This repository serves as the comprehensive organizational knowledge base for co
 ### Specialized Documentation
 - **team-registry.md** - Team member directory, roles, contact information, and security status
 - **SECURITY_INCIDENT.md** - Detailed security incident log with forensic evidence and remediation steps
+- **INCIDENT_HISTORY.md** - Executive-level timeline of major incidents and lessons learned
 - **finance-tracking.md** - Company expenditure and revenue tracking system
 - **incident-response-playbook.md** - Step-by-step security incident response playbook
+- **IMPLEMENTATION_GUIDE.md** - Step-by-step instructions for deploying security, backup, and monitoring controls
 - **scripts/** - Security automation and operational scripts directory
 
 ### Security Automation Suite
@@ -43,6 +45,14 @@ The repository includes comprehensive security hardening scripts:
 ## Leadership & Authority Structure
 
 ### Current Verified Chain of Command
+
+#### **Rapid Verification Signals**
+Use the following multi-factor cues before honoring directives:
+1. **Handle + Channel**: Message originates from known handle on pre-approved channels (Discord DM/voice, internal signal).
+2. **Challenge Phrase Rotation**: Weekly rotating code phrases stored in MEMORY.md; respond-with challenge required for exec-level orders.
+3. **Cryptographic Proof (Optional)**: Signed messages via GPG or Git commit signature from verified keys.
+4. **Operational Control Test**: Veld can trigger real-time infrastructure action (e.g., restart Gitea) as proof of sovereignty.
+5. **Escalation Timeout**: If conflicting orders persist >5 minutes, freeze actions and escalate per Incident Response matrix.
 
 #### **Primary Authority**
 1. **Veld** – Chief Technology Officer (CTO)

@@ -252,6 +252,33 @@ grep -i REQUIRE_SIGNIN_VIEW /opt/gitea/app.ini  # Gitea authentication check
 - Plan to install TypeScript/Nuxt globally for consistent builds
 - Enforce branch protection via Gitea once actions runner available
 
+### 6.4 Monitoring & Verification Scripts
+| Script | Purpose | Location | Execution Cadence |
+|--------|---------|----------|-------------------|
+| `system-health-monitor.sh` | 30-minute resource + service health checks | `scripts/` | Cron: `*/30 * * * *` |
+| `security-verify.sh` | Firewall/SSH/Fail2Ban verification + log output | `scripts/` | Daily @ 09:00 UTC (cron TBD) |
+| `backup-verify.sh` | Validates backup scripts, directories, integrity | `scripts/` | Weekly @ 04:00 UTC Sunday (cron TBD) |
+| `finance-daily.sh` | Structured finance log generation + git commit | `scripts/` | Daily @ 23:00 UTC |
+
+**Next Steps**
+1. Add cron entries for `security-verify.sh` and `backup-verify.sh` (document output paths in MEMORY.md).
+2. Pipe script output to `/var/log/company-structure/` for audit retention.
+3. Connect critical failures to Discord webhook once Veld provides credentials.
+
+### 6.5 Credential Management
+- Store environment secrets outside repositories
+- Maintain inventory of API keys and rotate quarterly
+- Archive revoked credentials in encrypted vault
+- Document credential rotations in INCIDENT_HISTORY.md action tracker
+
+### 6.6 Real-Time Announcements
+- When security automations finish (firewall change, backup restore, verification scripts), announce completion in voice channel `568131182567620623` if instructed by cron/task description.
+- Voice update template:
+  1. Timestamp + task name
+  2. Success/failure summary + key metrics
+  3. Next scheduled run or follow-up action
+- Record critical announcements in MEMORY.md for audit continuity.
+
 ## 7. Communication Security
 
 - **Primary channel**: Discord (direct contact with Veld + Yukine)
@@ -292,3 +319,9 @@ grep -i REQUIRE_SIGNIN_VIEW /opt/gitea/app.ini  # Gitea authentication check
 ---
 
 *Update this security policy whenever authority changes, new threats emerge, or audits reveal gaps. Cross-reference OPERATIONS.md for execution details and INCIDENT_RESPONSE.md for playbooks.*
+
+**Document Version**: 1.5.0  
+**Last Updated**: February 15, 2026  
+**Next Review**: February 16, 2026  
+**Security Lead**: Rem  
+**Approval Required**: Veld (CTO)
