@@ -165,21 +165,52 @@ Reference **INCIDENT_RESPONSE.md** for detailed playbooks. Highlights:
 - Keep MEMORY.md curated; redact sensitive identifiers when possible
 
 ### 6.2 Network Security
-- Current exposed ports: 22 (SSH), 3000 (Gitea), 3001 (Forgejo staging), 3002 (Nuxt dev server), 8880 (DeepInfra proxy), 18789/18792 (OpenClaw gateway)
-- Firewall status: UFW installed but inactive; iptables binary missing → **Action**: reinstall and enforce rules immediately
-- High-risk services: ports 3002 and 8880 currently bind to 0.0.0.0 without authentication. Restrict to localhost or place behind authenticated reverse proxy.
-- Suggested baseline rules:
-  - Allow SSH (22/tcp) from trusted IP ranges only (temporarily allow all until source allowlist defined)
-  - Allow Gitea HTTP (3000/tcp)
-  - Restrict Forgejo (3001/tcp) to admin IPs until migration completes
-  - Block public access to 3002/8880; require SSH tunnel or reverse proxy with auth
-  - Deny all other inbound traffic by default
-- Verification commands:
-  ```bash
-  ss -tlnp            # Validate bound ports
-  ufw status verbose  # Firewall state once configured
-  iptables -L -n -v   # Packet counters for troubleshooting
-  ```
+#### **Current Security Posture Assessment (February 15, 2026)**
+**Exposed Services Detected:**
+- ✅ **SSH (port 22)**: Open globally (key authentication only)
+- ✅ **Gitea (port 3000)**: Open globally with authentication
+- ⚠️ **Forgejo (port 3001)**: Not currently listening (migration staging)
+- ⚠️ **Nuxt dev server (port 3002)**: Open globally without authentication
+- ⚠️ **DeepInfra proxy (port 8880)**: Open globally without authentication
+- ✅ **OpenClaw gateway (18789/18792)**: Localhost only (properly secured)
+
+#### **Security Implementation Status:**
+**Critical Gaps Identified:**
+1. **Firewall Protection**: UFW not installed - **HIGH RISK**
+2. **Service Authentication**: Ports 3002/8880 exposed without auth - **HIGH RISK**
+3. **SSH Hardening**: No rate limiting or fail2ban - **MEDIUM RISK**
+4. **Log Monitoring**: No centralized logging or alerting - **MEDIUM RISK**
+
+#### **Immediate Action Plan:**
+```bash
+# 1. Install UFW firewall
+apt update && apt install ufw -y
+
+# 2. Configure baseline firewall rules
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp comment 'SSH Access'
+ufw allow 3000/tcp comment 'Gitea Service'
+
+# 3. Restrict unauthorized services to localhost
+# These rules will be automatically applied after firewall activation
+
+# 4. Enable firewall
+ufw --force enable
+ufw status verbose
+```
+
+#### **Service Security Recommendations:**
+- **Nuxt dev server (port 3002)**: Restrict to localhost or implement authentication
+- **DeepInfra proxy (port 8880)**: Restrict to localhost or implement authentication
+- **Gitea (port 3000)**: Ensure authentication is enforced in `/opt/gitea/app.ini`
+
+#### **Verification Commands:**
+```bash
+ss -tlnp                     # Validate bound ports
+ufw status verbose          # Firewall state once configured
+grep -i REQUIRE_SIGNIN_VIEW /opt/gitea/app.ini  # Gitea authentication check
+```
 
 ### 6.3 Code Security
 - Manual CI runner (`/opt/gitea/ci-runner.sh`) must be reviewed before each major code change

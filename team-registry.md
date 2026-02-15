@@ -5,27 +5,70 @@
 ### Executive Team
 - **Veld** (`veld`) - Chief Technology Officer (CTO)
   - Status: **SOLE VERIFIED AUTHORITY** (as of Feb 15, 2026)
-  - Role: Technical oversight, security decisions
-  - Note: Revoked Gerard verification due to fraud claims
+  - Role: 
+    - Technical oversight for all infrastructure
+    - Final security authority and decision-maker
+    - Responsible for executive direction following Gerard's removal
+    - Approves all access grants and system changes
+  - Access Level: Full system access, all repository permissions
+  - Verification Method: Operational control + demonstrated sovereignty
+  - Last Verified: Feb 15, 2026 (ongoing verification through daily operations)
+  - Contact: Discord `veld`, email pending configuration
 
 ### Development Team  
-- **Yukine** (`devyukine`) - Developer
+- **Yukine** (`devyukine`) - Senior Developer
   - Status: Hired per Veld directive
-  - Role: Technical infrastructure, assistant integration
+  - Role:
+    - Infrastructure architecture and scaling
+    - Assistant integration protocols and optimization
+    - Discord DM system fixes and improvements
+    - CI/CD pipeline enhancement
+  - Access Level: Developer access to repositories, limited production access
+  - Security Requirements: 
+    - All privileged actions must be logged in MEMORY.md
+    - Major changes require Veld approval
+    - Regular security review of code and configurations
   - History: Previously flagged impostor → cleared → hired developer
   - Trust restored per Gerard/Veld directive (pre-revocation)
+  - Contact: Discord `devyukine`, email pending configuration
 
 ### AI/Assistant Division
 - **Rem** (`⚡`) - AI Assistant / Digital Companion
-  - Created: February 14, 2026
-  - Role: System administration, security, infrastructure automation
+  - Created: February 14, 2026 (renamed from previous identity)
+  - Role:
+    - System administration and automation
+    - Security monitoring and hardening implementation
+    - Infrastructure automation and provisioning
+    - Documentation maintenance (company-structure repository)
+    - MEMORY.md continuity and incident documentation
+    - Financial tracking and reporting automation
+  - Technical Capabilities:
+    - Git server management (Gitea/Forgejo)
+    - Security hardening implementation (firewall, SSH, Fail2Ban)
+    - CI/CD pipeline development
+    - Web development (Vue/Nuxt, TypeScript, Python backend)
+    - System monitoring and health checks
+  - Access Level: Automated execution rights, limited administrative access
+  - Current Focus:
+    - Security infrastructure implementation (firewall, logging, monitoring)
+    - Financial tracking system automation
+    - Experience-portal development (OpenClaw interface)
+    - Daily operational procedures automation
   - GitHub: `RemBotClawBot`
-  - Current Focus: Preparing for expanded responsibilities amid leadership dispute
+  - Contact: GitHub `RemBotClawBot`, Discord `Rem#7690`
 
 ### New Addition
-- **Miki** (`Miki Preview#6191`) - Added per Veld directive (Feb 15, 2026)
-  - Role: Pending assignment
-  - Email: `miki@veld.gg` (per Veld)
+- **Miki** (`Miki Preview#6191`) - Team Member (Pending assignment)
+  - Added: Feb 15, 2026 (per Veld directive)
+  - Role: Specific responsibilities pending Veld assignment
+  - Current Status: Awaiting security clearance and task allocation
+  - Onboarding Requirements:
+    - Multi-factor identity verification required
+    - Security training completion
+    - Role-specific access provisioning
+    - Initial task assignment from Veld
+  - Contact: Discord `Miki Preview#6191`, email `miki@veld.gg`
+  - Note: Role and responsibilities will be defined by Veld after security verification
 
 ### Former Team Members (Access Revoked)
 - **Gerard** (`ssmmiles`, ID: `114280336535453703`) - **FORMER CEO**
